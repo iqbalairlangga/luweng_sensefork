@@ -76,8 +76,73 @@ apply_gaming_mode() {
         echo 0 > /sys/class/kgsl/kgsl-3d0/idle_timer 2>/dev/null
         echo 1 > /sys/class/kgsl/kgsl-3d0/force_rail_on 2>/dev/null
         echo 300 > /sys/class/kgsl/kgsl-3d0/max_pwrlevel 2>/dev/null
+        log "GPU: Adreno MAXIMUM"
     fi
-    log "GPU: Set to MAXIMUM FREQUENCY"
+    
+    # --- Mali GPU (MediaTek/Exynos/ARM) MAX ---
+    # Method 1: Mali via mali.0
+    if [ -d /sys/devices/platform/mali.0 ]; then
+        echo performance > /sys/devices/platform/mali.0/devfreq/governor 2>/dev/null
+        echo 1 > /sys/devices/platform/mali.0/force_clk_on 2>/dev/null
+        echo 1 > /sys/devices/platform/mali.0/force_rail_on 2>/dev/null
+        echo 0 > /sys/devices/platform/mali.0/idle_timer 2>/dev/null
+        log "GPU: Mali (mali.0) MAXIMUM"
+    fi
+    
+    # Method 2: Mali via mali0
+    if [ -d /sys/class/misc/mali0 ]; then
+        echo 1 > /sys/class/misc/mali0/force_clk_on 2>/dev/null
+        echo 1 > /sys/class/misc/mali0/force_rail_on 2>/dev/null
+        echo 0 > /sys/class/misc/mali0/idle_timer 2>/dev/null
+        log "GPU: Mali (mali0) MAXIMUM"
+    fi
+    
+    # Method 3: Mali via device tree
+    for mali in /sys/devices/platform/soc/*.mali /sys/devices/platform/*.mali; do
+        if [ -d "$mali" ]; then
+            echo performance > "$mali/devfreq/governor" 2>/dev/null
+            echo 1 > "$mali/force_clk_on" 2>/dev/null
+            echo 1 > "$mali/force_rail_on" 2>/dev/null
+            echo 0 > "$mali/idle_timer" 2>/dev/null
+            log "GPU: Mali (device tree) MAXIMUM"
+        fi
+    done
+    
+    # Method 4: Mali via devfreq
+    for devfreq in /sys/class/devfreq/*.mali /sys/class/devfreq/mali*; do
+        if [ -d "$devfreq" ]; then
+            echo performance > "$devfreq/governor" 2>/dev/null
+            MAX_FREQ=$(cat "$devfreq/max_freq" 2>/dev/null)
+            if [ -n "$MAX_FREQ" ]; then
+                echo "$MAX_FREQ" > "$devfreq/min_freq" 2>/dev/null
+            fi
+            log "GPU: Mali (devfreq) MAXIMUM"
+        fi
+    done
+    
+    # Method 5: Mali via kernel driver
+    if [ -f /sys/module/mali_kbase/parameters/gpu_clock_speed ]; then
+        MAX_SPEED=$(cat /sys/module/mali_kbase/parameters/gpu_clock_speed 2>/dev/null)
+        echo "$MAX_SPEED" > /sys/module/mali_kbase/parameters/gpu_clock_speed 2>/dev/null
+        log "GPU: Mali kernel driver MAXIMUM"
+    fi
+    
+    # --- Samsung Exynos GPU MAX ---
+    if [ -d /sys/devices/platform/exynos5-devfreq/gpu ]; then
+        echo performance > /sys/devices/platform/exynos5-devfreq/gpu/governor 2>/dev/null
+        log "GPU: Exynos MAXIMUM"
+    fi
+    
+    # --- Generic GPU MAX ---
+    for gpu_dev in /sys/devices/platform/soc/*.gpu /sys/devices/platform/*.gpu; do
+        if [ -d "$gpu_dev" ]; then
+            echo performance > "$gpu_dev/devfreq/governor" 2>/dev/null
+            echo 1 > "$gpu_dev/force_clk_on" 2>/dev/null
+            log "GPU: Generic MAXIMUM"
+        fi
+    done
+    
+    log "GPU: ALL TYPES MAXIMUM (Adreno + Mali)"
     
     # --- Network: Ultra Low Latency ---
     echo "bbr" > /proc/sys/net/ipv4/tcp_congestion_control 2>/dev/null
