@@ -1,13 +1,19 @@
-# LuwengSense Pro v2.0
+# LuwengSense Pro v3.0
 
-**Fork dari [LuwengSense](https://github.com/KepalaLuweng/LuwengSense) dengan real tweaks yang terbukti work.**
+> **Fork dari [LuwengSense](https://github.com/KepalaLuweng/LuwengSense) dengan real tweaks yang terbukti work.**
 
-## Apa itu LuwengSense Pro?
+---
 
-LuwengSense Pro adalah fork dari LuwengSense (Original) yang dibersihkan dari tweaks placebo dan fokus pada **2 hal utama**:
+## Tentang Project Ini
 
-1. **Signal & Ping Stability** - Koneksi internet lebih stabil
-2. **Gaming Performance** - Performa gaming lebih smooth
+**LuwengSense Pro** adalah versi **fork** dari module Magisk/KernelSU bernama **LuwengSense** (Original) yang dibuat oleh KepalaLuweng.
+
+Project ini dibuat karena versi original memiliki beberapa tweaks yang **placebo** (tidak benar-benar work). LuwengSense Pro dibersihkan dan hanya menggunakan tweaks yang **real** dan **terbukti** meningkatkan performa.
+
+### Fokus Utama
+
+1. **Signal & Ping Stability** - Koneksi internet lebih stabil, ping lebih rendah
+2. **Gaming Performance** - Performa gaming lebih smooth, FPS lebih tinggi
 
 ---
 
@@ -15,123 +21,204 @@ LuwengSense Pro adalah fork dari LuwengSense (Original) yang dibersihkan dari tw
 
 | Aspek | LuwengSense (Original) | LuwengSense Pro (Fork) |
 |-------|------------------------|------------------------|
-| **Thermal Throttle** | Placebo files (tidak work) | Real GPU/SkiaGL tweaks |
-| **Memory Cgroup** | Cgroup hacks (ignored kernel) | Proper VM tuning |
-| **Sysctl Values** | Banyak yang invalid | Validated & tested |
+| **Thermal Throttle** | Placebo files (tidak work) | Real GPU tweaks |
+| **Memory Cgroup** | Cgroup hacks (ignored) | Proper VM tuning |
+| **Sysctl Values** | Banyak invalid | Validated & tested |
 | **DNS** | `setprop net.dns` (tidak work) | DNS over TLS (real) |
-| **Profiles** | 6+ profiles (complex) | 3 profiles (fokus) |
-| **WebUI** | Web UI kompleks | iOS-style minimal |
-| **Code Size** | ~600+ baris | ~440 baris (lebih clean) |
+| **Profiles** | 6+ profiles | 3 profiles (fokus) |
+| **WebUI** | Kompleks | iOS-style minimal |
+| **GPU Support** | Adreno only | Adreno + **Mali** |
+| **Auto Detect** | Tidak ada | Game + Screen detect |
 
 ---
 
-## Apa yang Diubah?
-
-### 1. Dihapus (Placebo/Tidak Work)
+## Apa yang Dihapus (Placebo)
 
 ```
-❌ Thermal placebo files (system/vendor/bin/thermal)
+❌ Thermal placebo files
    → File kosong tidak bisa disable thermal asli
 
 ❌ Memory cgroup tweaks (/dev/memcg)
    → Kernel modern mengabaikan ini
 
 ❌ setprop net.dns1/dns2
-   → Tidak work di Android 9+, harus pakai DNS over TLS
+   → Tidak work di Android 9+
 
-❌ Beberapa sysctl values yang tidak ada di kernel
+❌ Sysctl values yang tidak ada
    → Error silently, tidak ada efek
-```
-
-### 2. Ditambahkan (Real Tweaks)
-
-```
-✅ BBR/CUBIC TCP Congestion Control
-   → Algoritma TCP yang benar-benar improve throughput
-
-✅ Network Buffer Tuning
-   → TCP window size 16MB, backlog 4096
-
-✅ TCP Fast Open
-   → Kurangi latency koneksi pertama
-
-✅ DNS over TLS (Cloudflare)
-   → DNS lebih cepat & aman
-
-✅ RIL Optimization
-   → Better radio signal handling
-
-✅ CPU Governor (schedutil/performance)
-   → Real CPU frequency scaling
-
-✅ GPU SkiaGL Rendering
-   → Hardware-accelerated UI
-
-✅ I/O Scheduler (bfq/noop)
-   → Faster storage access
-
-✅ ZRAM lz4 Compression
-   → Kompresi RAM lebih efisien
-
-✅ Input Sampling 240Hz
-   → Touch lebih responsif
-
-✅ VM Tuning
-   → swappiness, dirty_ratio, vfs_cache_pressure
-```
-
-### 3. WebUI
-
-```
-🎨 iOS-style Design
-   → Blur effects, SF Pro font, smooth animations
-
-🌙 Dark/Light Mode
-   → Auto-detect system theme
-
-📊 Real-time Stats
-   → Ping, CPU, RAM, GPU update setiap 2 detik
-
-🔄 Profile Switching
-   → Balanced/Gaming/Battery dengan 1 tap
-
-🔘 iOS Toggle Switches
-   → Haptic feedback support
 ```
 
 ---
 
-## Profiles
+## Apa yang Ditambahkan (Real Tweaks)
 
-| Profile | Description |
-|---------|-------------|
-| **Balanced** | Default. Balance antara performance dan battery |
-| **Gaming** | Max CPU/GPU performance, low latency |
-| **Battery** | Max efficiency, throttling lebih aggressive |
+### Network & Signal Stability
+
+| Tweak | Value | Penjelasan |
+|-------|-------|------------|
+| TCP Congestion | BBR/CUBIC | Algoritma TCP terbaik |
+| Network Buffer | 64MB | TCP window besar |
+| TCP Fastopen | Enabled | Kurangi latency |
+| DNS | Cloudflare DoT | DNS cepat & aman |
+| Low Latency | Enabled | Untuk gaming |
+| Max Backlog | 65535 | Koneksi lebih banyak |
+
+### CPU Performance
+
+| Tweak | Value | Penjelasan |
+|-------|-------|------------|
+| Governor | Performance | Forced max performance |
+| Min Frequency | 70-85% | CPU tidak pernah turun |
+| schedtune Boost | Enabled | Priority boost |
+| Dex2OAT Threads | 8 | Fast app compilation |
+
+### GPU Performance
+
+| Tweak | Value | Penjelasan |
+|-------|-------|------------|
+| **Adreno (Qualcomm)** | Forced | Max frequency locked |
+| **Mali (MediaTek)** | Forced | NEW - support semua Mali |
+| **Mali (Samsung Exynos)** | Forced | NEW |
+| **Mali (ARM)** | Forced | NEW |
+| Force Clock On | 1 | GPU tidak sleep |
+| Force Rail On | 1 | GPU selalu aktif |
+| Idle Timer | 0 | Disable idle timeout |
+
+### I/O Performance
+
+| Tweak | Value | Penjelasan |
+|-------|-------|------------|
+| Scheduler | none/noop | Minimal overhead |
+| Read Ahead | 4MB | Storage cepat |
+| Queue Requests | 256 | Parallel I/O |
+| FSTRIM | On boot | Storage optimization |
+
+### Memory Management
+
+| Tweak | Value | Penjelasan |
+|-------|-------|------------|
+| ZRAM Size | 75% RAM | Kompresi agresif |
+| Compression | lz4 | Fast compression |
+| Swappiness | 40 | RAM optimal |
+| Min Free | 16MB | Reserve RAM |
+
+### Auto-Detect Features
+
+| Fitur | Penjelasan |
+|-------|------------|
+| Auto Gaming Mode | Deteksi game otomatis |
+| Auto Battery Mode | Screen off = battery |
+| 28+ Games | Pre-configured list |
+| Manual Add Game | Custom package name |
+| Exact Match | Akurasi tinggi |
+
+### WebUI Features
+
+| Fitur | Penjelasan |
+|-------|------------|
+| iOS Design | Blur effects, smooth |
+| Dark/Light Mode | Auto theme |
+| Real-time Stats | Ping, CPU, RAM, GPU |
+| Manual Game List | Add/remove games |
+| Toast Notifications | Notifikasi semua aksi |
+| Profile Tabs | Balanced/Gaming/Battery |
+| Toggle Switches | iOS-style |
+| Tweak Status | Indicator active |
+
+---
+
+## Mode Transitions
+
+```
+┌─────────────────────────────────────────┐
+│            MODE TRANSITIONS             │
+├─────────────────────────────────────────┤
+│                                         │
+│   Screen OFF  ──────────►  Battery Mode │
+│       │                     (CPU/GPU low)│
+│       ▼                                │
+│   Screen ON   ◄──────────  Battery Mode │
+│       │                                │
+│       ▼                                │
+│   Normal App  ──────────►  Balanced     │
+│       │                     (Normal)    │
+│       ▼                                │
+│   Game Open   ──────────►  Gaming Mode  │
+│       │                     (MAX PERF)  │
+│       ▼                                │
+│   Game Close  ──────────►  Balanced     │
+│                             (Normal)    │
+└─────────────────────────────────────────┘
+```
+
+---
+
+## Gaming Mode vs Balanced Mode
+
+| Component | Balanced | Gaming |
+|-----------|----------|--------|
+| CPU Governor | schedutil | performance |
+| CPU Min Freq | 50% | **85%** |
+| GPU | Balanced | **MAX** |
+| Network | Normal | **Ultra Low Latency** |
+| I/O | bfq | **noop** |
+| Read Ahead | 128KB | **4MB** |
+| VM Swappiness | 40 | **10** |
+| Thermal | 85°C | **95°C** |
+| Logging | ON | **OFF** |
 
 ---
 
 ## Instalasi
 
-1. Download zip dari Releases
-2. Flash via Magisk/KernelSU Manager
-3. Reboot
+### Requirements
+- **Root:** Magisk v20.4+ atau KernelSU
+- **Android:** 8.0+ (Oreo - 16)
+- **Architecture:** ARM / ARM64
+
+### Steps
+1. Download zip dari [Releases](https://github.com/iqbalairlangga/luweng_sensefork/releases)
+2. Buka Magisk/KernelSU Manager
+3. Tap **Install** → Pilih zip file
 4. Tap tombol **"Action"** untuk buka WebUI
+5. Enable **Auto Gaming Mode** & **Auto Battery Mode**
 
 ---
 
-## Requirements
+## Cara Menggunakan WebUI
 
-- Magisk v20.4+ atau KernelSU
-- Android 8.0+ (Oreo - 16)
-- ARM/ARM64
+1. Buka Magisk/KernelSU Manager
+2. Tap module **LuwengSense Pro**
+3. Tap tombol **"Action"** (atau buka browser ke `http://127.0.0.1:8080`)
+4. Di WebUI kamu bisa:
+   - Lihat status (Ping, CPU, RAM, GPU)
+   - Switch profile (Balanced/Gaming/Battery)
+   - Enable/disable Auto Gaming & Auto Battery
+   - Add/remove game dari list
+   - Lihat semua tweaks yang aktif
+
+---
+
+## Games yang Sudah Terdaftar (28+)
+
+```
+Mobile Legends, Genshin Impact, PUBG Mobile, PUBG KR,
+Call of Duty, Clash of Clans, Clash Royale, Brawl Stars,
+FIFA Mobile, Fortnite, Wild Rift, Free Fire,
+Roblox, Minecraft, Subway Surfers, Temple Run,
+Talking Tom, 8 Ball Pool, Hay Day, Among Us
+```
+
+**Note:** Kamu bisa menambahkan game lain secara manual di WebUI!
 
 ---
 
 ## Credits
 
-- Original: [KepalaLuweng](https://github.com/KepalaLuweng/LuwengSense)
-- Fork & Pro Version: [iqbalairlangga](https://github.com/iqbalairlangga)
+| Role | Name |
+|------|------|
+| **Original Creator** | [KepalaLuweng](https://github.com/KepalaLuweng/LuwengSense) |
+| **Fork & Pro Version** | [iqbalairlangga](https://github.com/iqbalairlangga) |
 
 ---
 
@@ -142,5 +229,5 @@ Harap cantumkan credit jika menggunakan/memodifikasi.
 
 ---
 
-**Version:** 2.0  
-**Last Updated:** 2024
+**Version:** 3.0  
+**Last Updated:** July 2026
