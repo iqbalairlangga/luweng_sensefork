@@ -780,53 +780,26 @@
         let lastMode = 'Balanced';
         
         function updateStats() {
+            // Update stats (simulated for demo)
             document.getElementById('ping').textContent = Math.floor(Math.random() * 5 + 10);
             document.getElementById('cpu-freq').textContent = Math.floor(Math.random() * 400 + 1800);
             document.getElementById('ram').textContent = Math.floor(Math.random() * 1000 + 2000);
             document.getElementById('gpu-freq').textContent = Math.floor(Math.random() * 200 + 400);
             
-            // Screen state
-            screenOn = Math.random() > 0.05;
-            const screenEl = document.getElementById('screen-state');
-            const screenBadge = document.getElementById('screen-badge');
-            
-            if (screenOn) {
-                screenEl.textContent = 'ON';
-                screenBadge.textContent = 'Active';
-                screenBadge.className = 'badge green';
-            } else {
-                screenEl.textContent = 'OFF';
-                screenBadge.textContent = 'Battery';
-                screenBadge.className = 'badge orange';
-            }
-            
-            // Mode detection
-            if (!screenOn) {
-                currentMode = 'Battery';
-            } else if (Math.random() > 0.7) {
-                currentMode = 'Gaming';
-            } else {
-                currentMode = 'Balanced';
-            }
-            
-            // Show toast on mode change
-            if (currentMode !== lastMode) {
-                const modeMessages = {
-                    'Gaming': '🎮 Gaming Mode Activated',
-                    'Battery': '🔋 Battery Mode Activated',
-                    'Balanced': '⚖️ Balanced Mode Activated'
-                };
-                showToast(modeMessages[currentMode], currentMode === 'Gaming' ? 'success' : currentMode === 'Battery' ? 'info' : 'success');
-                lastMode = currentMode;
-            }
-            
-            document.getElementById('current-mode').textContent = currentMode;
+            // Screen state - static, only changes when user interacts
+            // No random changes - stays stable
+        }
+
+        // Mode functions (static, no random switching)
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('current-mode').textContent = mode;
             
             const badge = document.getElementById('mode-badge');
-            if (currentMode === 'Gaming') {
+            if (mode === 'Gaming') {
                 badge.textContent = 'Gaming';
                 badge.className = 'badge green';
-            } else if (currentMode === 'Battery') {
+            } else if (mode === 'Battery') {
                 badge.textContent = 'Battery';
                 badge.className = 'badge orange';
             } else {
@@ -851,13 +824,15 @@
         // ==========================================
         renderGameList();
         updateStats();
+        setMode('Balanced'); // Default mode
         
         // Show welcome toast
         setTimeout(() => {
             showToast('LuwengSense Pro loaded', 'success');
         }, 1000);
         
-        setInterval(updateStats, 3000);
+        // Only update stats (not mode) every 5 seconds
+        setInterval(updateStats, 5000);
     </script>
 </body>
 </html>
