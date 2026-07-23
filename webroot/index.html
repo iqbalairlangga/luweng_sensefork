@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>LuwengSense Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg: #f2f2f7;
+            --card: rgba(255,255,255,0.8);
+            --card-border: rgba(255,255,255,0.5);
+            --text: #1c1c1e;
+            --text-secondary: #8e8e93;
+            --accent: #007aff;
+            --green: #34c759;
+            --red: #ff3b30;
+            --orange: #ff9500;
+            --blur: 20px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #000000;
+                --card: rgba(28,28,30,0.8);
+                --card-border: rgba(255,255,255,0.08);
+                --text: #ffffff;
+                --text-secondary: #98989d;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .status-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 44px;
+            background: rgba(242,242,247,0.72);
+            backdrop-filter: saturate(180%) blur(var(--blur));
+            -webkit-backdrop-filter: saturate(180%) blur(var(--blur));
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 16px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .status-bar {
+                background: rgba(0,0,0,0.72);
+            }
+        }
+
+        .status-bar h1 {
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.4px;
+        }
+
+        .container {
+            padding: 59px 16px 100px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 0 16px;
+            margin-bottom: 8px;
+            margin-top: 24px;
+        }
+
+        .card {
+            background: var(--card);
+            backdrop-filter: saturate(180%) blur(var(--blur));
+            -webkit-backdrop-filter: saturate(180%) blur(var(--blur));
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            overflow: hidden;
+            margin-bottom: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .card:active {
+            transform: scale(0.98);
+        }
+
+        .card-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 0.5px solid rgba(0,0,0,0.08);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .card-row {
+                border-bottom-color: rgba(255,255,255,0.08);
+            }
+        }
+
+        .card-row:last-child {
+            border-bottom: none;
+        }
+
+        .card-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 16px;
+        }
+
+        .card-content {
+            flex: 1;
+        }
+
+        .card-label {
+            font-size: 17px;
+            font-weight: 400;
+        }
+
+        .card-value {
+            font-size: 15px;
+            color: var(--text-secondary);
+        }
+
+        .badge {
+            background: var(--accent);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+
+        .badge.green { background: var(--green); }
+        .badge.orange { background: var(--orange); }
+
+        .toggle {
+            position: relative;
+            width: 51px;
+            height: 31px;
+            margin-left: 12px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: #e9e9ea;
+            border-radius: 31px;
+            transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 27px;
+            height: 27px;
+            left: 2px;
+            top: 2px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .toggle input:checked + .toggle-slider {
+            background: var(--green);
+        }
+
+        .toggle input:checked + .toggle-slider::before {
+            transform: translateX(20px);
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 16px 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .profile-tabs {
+            display: flex;
+            background: rgba(118,118,128,0.12);
+            border-radius: 10px;
+            padding: 2px;
+        }
+
+        .profile-tab {
+            flex: 1;
+            padding: 8px 12px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .profile-tab.active {
+            background: var(--card);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .profile-tab.active {
+                box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            }
+        }
+
+        .signal-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 12px;
+        }
+
+        .signal-bar {
+            width: 3px;
+            background: var(--green);
+            border-radius: 1px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .signal-bar:nth-child(1) { height: 4px; animation-delay: 0s; }
+        .signal-bar:nth-child(2) { height: 6px; animation-delay: 0.1s; }
+        .signal-bar:nth-child(3) { height: 8px; animation-delay: 0.2s; }
+        .signal-bar:nth-child(4) { height: 10px; animation-delay: 0.3s; }
+        .signal-bar:nth-child(5) { height: 12px; animation-delay: 0.4s; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .footer {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 2.5px solid rgba(0,0,0,0.1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="status-bar">
+        <h1>LuwengSense Pro</h1>
+    </div>
+
+    <div class="container">
+        <!-- Status Card -->
+        <div class="section-title">Status</div>
+        <div class="card fade-in">
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="ping">--</div>
+                    <div class="stat-label">PING</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="cpu-freq">--</div>
+                    <div class="stat-label">CPU MHz</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="ram">--</div>
+                    <div class="stat-label">RAM MB</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="gpu-freq">--</div>
+                    <div class="stat-label">GPU MHz</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signal Section -->
+        <div class="section-title">Network</div>
+        <div class="card fade-in" style="animation-delay: 0.1s">
+            <div class="card-row">
+                <div class="card-icon" style="background: #34c759;">
+                    <div class="signal-bars">
+                        <div class="signal-bar"></div>
+                        <div class="signal-bar"></div>
+                        <div class="signal-bar"></div>
+                        <div class="signal-bar"></div>
+                        <div class="signal-bar"></div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="card-label">Signal Strength</div>
+                    <div class="card-value" id="signal-status">Optimized</div>
+                </div>
+                <span class="badge green">Active</span>
+            </div>
+            <div class="card-row">
+                <div class="card-icon" style="background: #007aff;">⚡</div>
+                <div class="card-content">
+                    <div class="card-label">TCP Algorithm</div>
+                    <div class="card-value" id="tcp-algo">BBR</div>
+                </div>
+            </div>
+            <div class="card-row">
+                <div class="card-icon" style="background: #5856d6;">🔒</div>
+                <div class="card-content">
+                    <div class="card-label">DNS</div>
+                    <div class="card-value" id="dns-server">Cloudflare (DoT)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div class="section-title">Profile</div>
+        <div class="card fade-in" style="animation-delay: 0.2s">
+            <div style="padding: 12px 16px;">
+                <div class="profile-tabs">
+                    <div class="profile-tab active" data-profile="balanced">Balanced</div>
+                    <div class="profile-tab" data-profile="gaming">Gaming</div>
+                    <div class="profile-tab" data-profile="battery">Battery</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tweaks Section -->
+        <div class="section-title">Active Tweaks</div>
+        <div class="card fade-in" style="animation-delay: 0.3s">
+            <div class="card-row">
+                <div class="card-icon" style="background: #ff9500;">📡</div>
+                <div class="card-content">
+                    <div class="card-label">RIL Optimization</div>
+                    <div class="card-value">Better signal handling</div>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox" checked id="ril-toggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="card-row">
+                <div class="card-icon" style="background: #34c759;">🎮</div>
+                <div class="card-content">
+                    <div class="card-label">Gaming Mode</div>
+                    <div class="card-value">CPU & GPU boost</div>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox" checked id="gaming-toggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="card-row">
+                <div class="card-icon" style="background: #af52de;">💾</div>
+                <div class="card-content">
+                    <div class="card-label">ZRAM</div>
+                    <div class="card-value" id="zram-status">lz4 compression</div>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox" checked id="zram-toggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="card-row">
+                <div class="card-icon" style="background: #ff3b30;">🚫</div>
+                <div class="card-content">
+                    <div class="card-label">Thermal Throttle</div>
+                    <div class="card-value">Monitoring active</div>
+                </div>
+                <span class="badge orange">Safe</span>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>LuwengSense Pro v2.0</p>
+            <p style="margin-top: 8px;">Built with ❤️ by <a href="https://t.me/luwengtechofficial">KepalaLuweng</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Profile switching
+        const tabs = document.querySelectorAll('.profile-tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                // Haptic feedback
+                if (navigator.vibrate) navigator.vibrate(10);
+            });
+        });
+
+        // Toggle animations
+        document.querySelectorAll('.toggle input').forEach(toggle => {
+            toggle.addEventListener('change', () => {
+                if (navigator.vibrate) navigator.vibrate(10);
+            });
+        });
+
+        // Simulated real-time updates
+        function updateStats() {
+            document.getElementById('ping').textContent = Math.floor(Math.random() * 5 + 10);
+            document.getElementById('cpu-freq').textContent = Math.floor(Math.random() * 400 + 1800);
+            document.getElementById('ram').textContent = Math.floor(Math.random() * 1000 + 2000);
+            document.getElementById('gpu-freq').textContent = Math.floor(Math.random() * 200 + 400);
+        }
+
+        updateStats();
+        setInterval(updateStats, 2000);
+    </script>
+</body>
+</html>
