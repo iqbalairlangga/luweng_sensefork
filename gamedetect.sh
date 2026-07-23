@@ -434,20 +434,25 @@ while true; do
     if [ -f "$MODDIR/autogame.conf" ] && [ "$(cat "$MODDIR/autogame.conf")" = "1" ]; then
         FOCUSED_APP=$(get_foreground_app)
         
-        # Check if it's a game
-        IS_GAME=0
-        for game in $(cat "$GAME_LIST"); do
-            if echo "$FOCUSED_APP" | grep -q "$game"; then
-                IS_GAME=1
-                break
+        # Only check if we have a valid app package (contains at least 2 dots)
+        DOTS=$(echo "$FOCUSED_APP" | tr -cd '.' | wc -c)
+        if [ "$DOTS" -ge 2 ] && [ -n "$FOCUSED_APP" ]; then
+            # Check if it's a game (exact match)
+            IS_GAME=0
+            for game in $(cat "$GAME_LIST"); do
+                # Exact match - package must be identical
+                if [ "$FOCUSED_APP" = "$game" ]; then
+                    IS_GAME=1
+                    break
+                fi
+            done
+            
+            # Apply mode
+            if [ "$IS_GAME" = "1" ] && [ "$CURRENT_MODE" != "gaming" ]; then
+                apply_gaming_mode
+            elif [ "$IS_GAME" = "0" ] && [ "$CURRENT_MODE" = "gaming" ]; then
+                apply_balanced_mode
             fi
-        done
-        
-        # Apply mode
-        if [ "$IS_GAME" = "1" ] && [ "$CURRENT_MODE" != "gaming" ]; then
-            apply_gaming_mode
-        elif [ "$IS_GAME" = "0" ] && [ "$CURRENT_MODE" = "gaming" ]; then
-            apply_balanced_mode
         fi
     fi
     

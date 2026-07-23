@@ -533,20 +533,13 @@
                 </div>
                 <span class="badge green" id="screen-badge">Active</span>
             </div>
-            <div class="card-row">
+            <div class="card-row" style="border-bottom: none;">
                 <div class="card-icon" style="background: #ff9500;">⚡</div>
                 <div class="card-content">
                     <div class="card-label">Current Mode</div>
                     <div class="card-value" id="current-mode">Balanced</div>
                 </div>
                 <span class="badge" id="mode-badge">Normal</span>
-            </div>
-            <div class="card-row">
-                <div class="card-icon" style="background: #5856d6;">🔍</div>
-                <div class="card-content">
-                    <div class="card-label">Foreground App</div>
-                    <div class="card-value" id="foreground-app">Detecting...</div>
-                </div>
             </div>
         </div>
 
@@ -840,10 +833,6 @@
                 badge.textContent = 'Normal';
                 badge.className = 'badge';
             }
-            
-            // Foreground app
-            const apps = ['com.mobile.legends', 'com.miHoYo.GenshinImpact', 'com.android.launcher', 'com.android.settings'];
-            document.getElementById('foreground-app').textContent = apps[Math.floor(Math.random() * apps.length)];
         }
 
         // ==========================================
