@@ -14,11 +14,13 @@ case "$1" in
     "get_status")
         # Return module status
         MODE=$(cat "$MODE_FILE" 2>/dev/null || echo "balanced")
+        SCREEN=$(dumpsys power 2>/dev/null | grep -q "mScreenOn=false" && echo "off" || echo "on")
         echo "{"
         echo "  \"module\": \"LuwengSense Pro\","
         echo "  \"version\": \"2.0\","
         echo "  \"active\": true,"
         echo "  \"mode\": \"$MODE\","
+        echo "  \"screen\": \"$SCREEN\","
         echo "  \"uptime\": $(cat /proc/uptime | awk '{print int($1)}')"
         echo "}"
         ;;

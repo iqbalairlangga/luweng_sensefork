@@ -400,8 +400,8 @@
             </div>
         </div>
 
-        <!-- Game Auto-Detect Section -->
-        <div class="section-title">Game Auto-Detect</div>
+        <!-- Auto-Detect Section -->
+        <div class="section-title">Auto-Detect</div>
         <div class="card fade-in" style="animation-delay: 0.3s">
             <div class="card-row">
                 <div class="card-icon" style="background: #34c759;">🎮</div>
@@ -415,7 +415,26 @@
                 </label>
             </div>
             <div class="card-row">
-                <div class="card-icon" style="background: #ff9500;">📱</div>
+                <div class="card-icon" style="background: #ff9500;">🔋</div>
+                <div class="card-content">
+                    <div class="card-label">Auto Battery Mode</div>
+                    <div class="card-value">Screen off = battery mode</div>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox" checked id="autobattery-toggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="card-row">
+                <div class="card-icon" style="background: #007aff;">📱</div>
+                <div class="card-content">
+                    <div class="card-label">Screen State</div>
+                    <div class="card-value" id="screen-state">ON</div>
+                </div>
+                <span class="badge green" id="screen-badge">Active</span>
+            </div>
+            <div class="card-row">
+                <div class="card-icon" style="background: #ff9500;">⚡</div>
                 <div class="card-content">
                     <div class="card-label">Current Mode</div>
                     <div class="card-value" id="current-mode">Balanced</div>
@@ -544,7 +563,8 @@
         }
 
         // Simulated real-time updates
-        let isGamingMode = false;
+        let screenOn = true;
+        let currentMode = 'Balanced';
         
         function updateStats() {
             document.getElementById('ping').textContent = Math.floor(Math.random() * 5 + 10);
@@ -552,24 +572,42 @@
             document.getElementById('ram').textContent = Math.floor(Math.random() * 1000 + 2000);
             document.getElementById('gpu-freq').textContent = Math.floor(Math.random() * 200 + 400);
             
-            // Simulate mode detection
-            const modes = ['Balanced', 'Gaming', 'Battery'];
-            const currentMode = modes[Math.floor(Math.random() * 3)];
+            // Simulate screen state (mostly on, occasional off for demo)
+            screenOn = Math.random() > 0.1;
+            const screenEl = document.getElementById('screen-state');
+            const screenBadge = document.getElementById('screen-badge');
+            
+            if (screenOn) {
+                screenEl.textContent = 'ON';
+                screenBadge.textContent = 'Active';
+                screenBadge.className = 'badge green';
+            } else {
+                screenEl.textContent = 'OFF';
+                screenBadge.textContent = 'Battery';
+                screenBadge.className = 'badge orange';
+            }
+            
+            // Mode detection based on screen state and random game
+            if (!screenOn) {
+                currentMode = 'Battery';
+            } else if (Math.random() > 0.7) {
+                currentMode = 'Gaming';
+            } else {
+                currentMode = 'Balanced';
+            }
+            
             document.getElementById('current-mode').textContent = currentMode;
             
             const badge = document.getElementById('mode-badge');
             if (currentMode === 'Gaming') {
                 badge.textContent = 'Gaming';
                 badge.className = 'badge green';
-                isGamingMode = true;
             } else if (currentMode === 'Battery') {
                 badge.textContent = 'Battery';
                 badge.className = 'badge orange';
-                isGamingMode = false;
             } else {
                 badge.textContent = 'Normal';
                 badge.className = 'badge';
-                isGamingMode = false;
             }
             
             // Simulate foreground app detection
@@ -583,6 +621,15 @@
                 console.log('Auto-game enabled');
             } else {
                 console.log('Auto-game disabled');
+            }
+        });
+
+        // Auto-battery toggle
+        document.getElementById('autobattery-toggle').addEventListener('change', function() {
+            if (this.checked) {
+                console.log('Auto-battery enabled');
+            } else {
+                console.log('Auto-battery disabled');
             }
         });
 
