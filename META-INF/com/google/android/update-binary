@@ -23,9 +23,22 @@ require_new_magisk() {
 OUTFD=$2
 ZIPFILE=$3
 
-[ -f /data/adb/magisk/util_functions.sh ] || require_new_magisk
-. /data/adb/magisk/util_functions.sh
-[ $MAGISK_VER_CODE -lt 20400 ] && require_new_magisk
+# Try Magisk first
+if [ -f /data/adb/magisk/util_functions.sh ]; then
+  . /data/adb/magisk/util_functions.sh
+  [ $MAGISK_VER_CODE -lt 20400 ] && require_new_magisk
+  install_module
+  exit 0
+fi
 
-install_module
-exit 0
+# Try KernelSU
+if [ -f /data/adb/ksu/bin/ksud ]; then
+  ui_print "- KernelSU detected"
+  # KernelSU handles installation differently
+  exit 0
+fi
+
+ui_print "*******************************"
+ui_print "    Root manager not found     "
+ui_print "*******************************"
+exit 1
