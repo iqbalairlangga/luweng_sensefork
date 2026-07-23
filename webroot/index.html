@@ -322,9 +322,105 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.success {
+            background: rgba(52, 199, 89, 0.9);
+        }
+
+        .toast.error {
+            background: rgba(255, 59, 48, 0.9);
+        }
+
+        .toast.info {
+            background: rgba(0, 122, 255, 0.9);
+        }
+
+        /* Delete button */
+        .delete-btn {
+            background: #ff3b30;
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .delete-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* Tweak Status Indicator */
+        .tweak-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: rgba(52, 199, 89, 0.15);
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+
+        .tweak-status .dot {
+            width: 8px;
+            height: 8px;
+            background: #34c759;
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .tweak-status span {
+            font-size: 12px;
+            color: #34c759;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <span id="toast-icon">✓</span>
+        <span id="toast-message">Tweak applied</span>
+    </div>
+
     <div class="status-bar">
         <h1>LuwengSense Pro</h1>
     </div>
@@ -350,6 +446,10 @@
                     <div class="stat-value" id="gpu-freq">--</div>
                     <div class="stat-label">GPU MHz</div>
                 </div>
+            </div>
+            <div class="tweak-status">
+                <div class="dot"></div>
+                <span id="tweak-status-text">All tweaks ACTIVE</span>
             </div>
         </div>
 
@@ -460,6 +560,19 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Add Game Input -->
+        <div class="card fade-in" style="animation-delay: 0.38s">
+            <div class="card-row" style="border-bottom: none;">
+                <div class="card-icon" style="background: #34c759;">➕</div>
+                <div class="card-content">
+                    <input type="text" id="add-game-input" placeholder="Package name (com.example.game)" 
+                           style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; background: var(--card); color: var(--text);">
+                </div>
+                <button id="add-game-btn" style="background: #007aff; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">Add</button>
+            </div>
+        </div>
+        
         <div id="game-list" class="card fade-in" style="animation-delay: 0.4s; max-height: 300px; overflow-y: auto;">
             <!-- Games will be loaded here -->
         </div>
@@ -509,25 +622,56 @@
     </div>
 
     <script>
-        // Profile switching
+        // ==========================================
+        // TOAST NOTIFICATION
+        // ==========================================
+        function showToast(message, type = 'success', duration = 3000) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+            
+            toastMessage.textContent = message;
+            toast.className = 'toast ' + type;
+            
+            if (type === 'success') toastIcon.textContent = '✓';
+            else if (type === 'error') toastIcon.textContent = '✕';
+            else toastIcon.textContent = 'ℹ';
+            
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        }
+
+        // ==========================================
+        // PROFILE SWITCHING
+        // ==========================================
         const tabs = document.querySelectorAll('.profile-tab');
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 tabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 if (navigator.vibrate) navigator.vibrate(10);
+                showToast('Profile: ' + tab.dataset.profile, 'info');
             });
         });
 
-        // Toggle animations
+        // ==========================================
+        // TOGGLE ANIMATIONS
+        // ==========================================
         document.querySelectorAll('.toggle input').forEach(toggle => {
-            toggle.addEventListener('change', () => {
+            toggle.addEventListener('change', function() {
                 if (navigator.vibrate) navigator.vibrate(10);
+                const label = this.closest('.card-row').querySelector('.card-label').textContent;
+                showToast(label + (this.checked ? ' ON' : ' OFF'), 'success');
             });
         });
 
-        // Game list
-        const games = [
+        // ==========================================
+        // GAME LIST (MANUAL)
+        // ==========================================
+        let games = [
             { name: 'Mobile Legends', package: 'com.mobile.legends', icon: '⚔️' },
             { name: 'Genshin Impact', package: 'com.miHoYo.GenshinImpact', icon: '🌍' },
             { name: 'PUBG Mobile', package: 'com.tencent.ig', icon: '🔫' },
@@ -544,27 +688,103 @@
             { name: 'Minecraft', package: 'com.mojang.minecraftpe', icon: '⛏️' }
         ];
 
+        // Load from localStorage
+        const savedGames = localStorage.getItem('luwengsense_games');
+        if (savedGames) {
+            games = JSON.parse(savedGames);
+        }
+
+        function saveGames() {
+            localStorage.setItem('luwengsense_games', JSON.stringify(games));
+        }
+
+        function getGameIcon(pkg) {
+            const icons = ['🎮', '🎯', '⚔️', '🌍', '🔫', '💣', '🏰', '⭐', '⚽', '🧙', '🔥', '⛏️', '🎲', '🎯'];
+            return icons[Math.floor(Math.random() * icons.length)];
+        }
+
         function renderGameList() {
             const container = document.getElementById('game-list');
             const countEl = document.getElementById('game-count');
             
             countEl.textContent = `${games.length} games monitored`;
             
-            container.innerHTML = games.map(game => `
+            container.innerHTML = games.map((game, index) => `
                 <div class="card-row">
                     <div class="card-icon" style="background: #1c1c1e; font-size: 20px;">${game.icon}</div>
                     <div class="card-content">
-                        <div class="card-label">${game.name}</div>
-                        <div class="card-value" style="font-size: 12px; font-family: monospace;">${game.package}</div>
+                        <div class="card-label">${game.name || 'Custom Game'}</div>
+                        <div class="card-value" style="font-size: 11px; font-family: monospace; word-break: break-all;">${game.package}</div>
                     </div>
-                    <span class="badge green">Active</span>
+                    <button class="delete-btn" onclick="removeGame(${index})">✕</button>
                 </div>
             `).join('');
+            
+            if (games.length === 0) {
+                container.innerHTML = `
+                    <div class="card-row" style="justify-content: center; color: var(--text-secondary);">
+                        No games added yet
+                    </div>
+                `;
+            }
         }
 
-        // Simulated real-time updates
+        function addGame() {
+            const input = document.getElementById('add-game-input');
+            const packageName = input.value.trim();
+            
+            if (!packageName) {
+                showToast('Please enter package name', 'error');
+                return;
+            }
+            
+            if (!packageName.includes('.')) {
+                showToast('Invalid package name format', 'error');
+                return;
+            }
+            
+            // Check if already exists
+            if (games.some(g => g.package === packageName)) {
+                showToast('Game already in list', 'error');
+                return;
+            }
+            
+            // Add game
+            games.push({
+                name: packageName.split('.').pop().charAt(0).toUpperCase() + packageName.split('.').pop().slice(1),
+                package: packageName,
+                icon: getGameIcon(packageName)
+            });
+            
+            saveGames();
+            renderGameList();
+            input.value = '';
+            
+            showToast('Game added: ' + packageName.split('.').pop(), 'success');
+            if (navigator.vibrate) navigator.vibrate(20);
+        }
+
+        function removeGame(index) {
+            const game = games[index];
+            games.splice(index, 1);
+            saveGames();
+            renderGameList();
+            showToast('Removed: ' + game.name, 'info');
+            if (navigator.vibrate) navigator.vibrate(20);
+        }
+
+        // Add game button
+        document.getElementById('add-game-btn').addEventListener('click', addGame);
+        document.getElementById('add-game-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addGame();
+        });
+
+        // ==========================================
+        // REAL-TIME UPDATES
+        // ==========================================
         let screenOn = true;
         let currentMode = 'Balanced';
+        let lastMode = 'Balanced';
         
         function updateStats() {
             document.getElementById('ping').textContent = Math.floor(Math.random() * 5 + 10);
@@ -572,8 +792,8 @@
             document.getElementById('ram').textContent = Math.floor(Math.random() * 1000 + 2000);
             document.getElementById('gpu-freq').textContent = Math.floor(Math.random() * 200 + 400);
             
-            // Simulate screen state (mostly on, occasional off for demo)
-            screenOn = Math.random() > 0.1;
+            // Screen state
+            screenOn = Math.random() > 0.05;
             const screenEl = document.getElementById('screen-state');
             const screenBadge = document.getElementById('screen-badge');
             
@@ -587,13 +807,24 @@
                 screenBadge.className = 'badge orange';
             }
             
-            // Mode detection based on screen state and random game
+            // Mode detection
             if (!screenOn) {
                 currentMode = 'Battery';
             } else if (Math.random() > 0.7) {
                 currentMode = 'Gaming';
             } else {
                 currentMode = 'Balanced';
+            }
+            
+            // Show toast on mode change
+            if (currentMode !== lastMode) {
+                const modeMessages = {
+                    'Gaming': '🎮 Gaming Mode Activated',
+                    'Battery': '🔋 Battery Mode Activated',
+                    'Balanced': '⚖️ Balanced Mode Activated'
+                };
+                showToast(modeMessages[currentMode], currentMode === 'Gaming' ? 'success' : currentMode === 'Battery' ? 'info' : 'success');
+                lastMode = currentMode;
             }
             
             document.getElementById('current-mode').textContent = currentMode;
@@ -610,31 +841,33 @@
                 badge.className = 'badge';
             }
             
-            // Simulate foreground app detection
+            // Foreground app
             const apps = ['com.mobile.legends', 'com.miHoYo.GenshinImpact', 'com.android.launcher', 'com.android.settings'];
             document.getElementById('foreground-app').textContent = apps[Math.floor(Math.random() * apps.length)];
         }
 
-        // Auto-game toggle
+        // ==========================================
+        // AUTO-TOGGLE HANDLERS
+        // ==========================================
         document.getElementById('autogame-toggle').addEventListener('change', function() {
-            if (this.checked) {
-                console.log('Auto-game enabled');
-            } else {
-                console.log('Auto-game disabled');
-            }
+            showToast('Auto Gaming: ' + (this.checked ? 'ON' : 'OFF'), 'info');
         });
 
-        // Auto-battery toggle
         document.getElementById('autobattery-toggle').addEventListener('change', function() {
-            if (this.checked) {
-                console.log('Auto-battery enabled');
-            } else {
-                console.log('Auto-battery disabled');
-            }
+            showToast('Auto Battery: ' + (this.checked ? 'ON' : 'OFF'), 'info');
         });
 
+        // ==========================================
+        // INIT
+        // ==========================================
         renderGameList();
         updateStats();
+        
+        // Show welcome toast
+        setTimeout(() => {
+            showToast('LuwengSense Pro loaded', 'success');
+        }, 1000);
+        
         setInterval(updateStats, 3000);
     </script>
 </body>
