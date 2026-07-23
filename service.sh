@@ -193,4 +193,11 @@ setprop dalvik.vm.dex2oat-threads 4
 setprop dalvik.vm.image-dex2oat-threads 4
 log "ART/Dalvik tweaks applied"
 
+# ==========================================
+# GAME AUTO-DETECT (BACKGROUND)
+# ==========================================
+log "Starting game detector..."
+echo "balanced" > /data/adb/luwengsense_mode
+sh "$MODDIR/gamedetect.sh" &
+
 log "=== LuwengSense Pro Complete ==="

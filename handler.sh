@@ -3,6 +3,8 @@
 
 MODDIR=${0%/*}
 DATA_DIR="/data/adb/luwengsense_pro"
+GAME_LIST="$MODDIR/games.conf"
+MODE_FILE="/data/adb/luwengsense_mode"
 
 # Create data directory
 mkdir -p "$DATA_DIR"
@@ -11,10 +13,12 @@ mkdir -p "$DATA_DIR"
 case "$1" in
     "get_status")
         # Return module status
+        MODE=$(cat "$MODE_FILE" 2>/dev/null || echo "balanced")
         echo "{"
         echo "  \"module\": \"LuwengSense Pro\","
         echo "  \"version\": \"2.0\","
         echo "  \"active\": true,"
+        echo "  \"mode\": \"$MODE\","
         echo "  \"uptime\": $(cat /proc/uptime | awk '{print int($1)}')"
         echo "}"
         ;;
@@ -61,21 +65,81 @@ case "$1" in
         fi
         ;;
         
-    "set_profile")
-        # Set performance profile
-        PROFILE=$2
-        echo "$PROFILE" > "$MODDIR/profile.conf"
-        echo "{ \"status\": \"ok\", \"profile\": \"$PROFILE\" }"
+    "get_mode")
+        # Get current mode
+        MODE=$(cat "$MODE_FILE" 2>/dev/null || echo "balanced")
+        echo "{ \"mode\": \"$MODE\" }"
         ;;
         
-    "get_profile")
-        # Get current profile
-        if [ -f "$MODDIR/profile.conf" ]; then
-            PROFILE=$(cat "$MODDIR/profile.conf")
+    "get_autogame")
+        # Get auto-game status
+        if [ -f "$MODDIR/autogame.conf" ] && [ "$(cat "$MODDIR/autogame.conf")" = "1" ]; then
+            echo "{ \"enabled\": true }"
         else
-            PROFILE="balanced"
+            echo "{ \"enabled\": false }"
         fi
-        echo "{ \"profile\": \"$PROFILE\" }"
+        ;;
+        
+    "set_autogame")
+        # Set auto-game status
+        ENABLED=$2
+        if [ "$ENABLED" = "1" ]; then
+            echo "1" > "$MODDIR/autogame.conf"
+            echo "{ \"status\": \"ok\", \"enabled\": true }"
+        else
+            echo "0" > "$MODDIR/autogame.conf"
+            echo "{ \"status\": \"ok\", \"enabled\": false }"
+        fi
+        ;;
+        
+    "get_games")
+        # Get game list
+        if [ -f "$GAME_LIST" ]; then
+            echo "["
+            FIRST=1
+            for game in $(cat "$GAME_LIST"); do
+                [ "$FIRST" = "0" ] && echo ","
+                echo "  \"$game\""
+                FIRST=0
+            done
+            echo "]"
+        else
+            echo "[]"
+        fi
+        ;;
+        
+    "add_game")
+        # Add game to list
+        PACKAGE=$2
+        if [ -n "$PACKAGE" ]; then
+            if [ -f "$GAME_LIST" ]; then
+                if ! grep -q "$PACKAGE" "$GAME_LIST"; then
+                    echo "$PACKAGE" >> "$GAME_LIST"
+                fi
+            else
+                echo "$PACKAGE" > "$GAME_LIST"
+            fi
+            echo "{ \"status\": \"ok\", \"package\": \"$PACKAGE\" }"
+        else
+            echo "{ \"error\": \"No package name provided\" }"
+        fi
+        ;;
+        
+    "remove_game")
+        # Remove game from list
+        PACKAGE=$2
+        if [ -n "$PACKAGE" ] && [ -f "$GAME_LIST" ]; then
+            sed -i "/$PACKAGE/d" "$GAME_LIST"
+            echo "{ \"status\": \"ok\", \"removed\": \"$PACKAGE\" }"
+        else
+            echo "{ \"error\": \"Package not found\" }"
+        fi
+        ;;
+        
+    "get_foreground")
+        # Get current foreground app
+        FOCUSED=$(dumpsys activity activities | grep "mResumedActivity" | awk '{print $NF}' | cut -d'/' -f1 | sed 's/}//')
+        echo "{ \"app\": \"$FOCUSED\" }"
         ;;
         
     *)

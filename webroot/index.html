@@ -400,9 +400,54 @@
             </div>
         </div>
 
+        <!-- Game Auto-Detect Section -->
+        <div class="section-title">Game Auto-Detect</div>
+        <div class="card fade-in" style="animation-delay: 0.3s">
+            <div class="card-row">
+                <div class="card-icon" style="background: #34c759;">🎮</div>
+                <div class="card-content">
+                    <div class="card-label">Auto Gaming Mode</div>
+                    <div class="card-value">Detect games automatically</div>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox" checked id="autogame-toggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="card-row">
+                <div class="card-icon" style="background: #ff9500;">📱</div>
+                <div class="card-content">
+                    <div class="card-label">Current Mode</div>
+                    <div class="card-value" id="current-mode">Balanced</div>
+                </div>
+                <span class="badge" id="mode-badge">Normal</span>
+            </div>
+            <div class="card-row">
+                <div class="card-icon" style="background: #5856d6;">🔍</div>
+                <div class="card-content">
+                    <div class="card-label">Foreground App</div>
+                    <div class="card-value" id="foreground-app">Detecting...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game List -->
+        <div class="card fade-in" style="animation-delay: 0.35s">
+            <div class="card-row" style="border-bottom: none;">
+                <div class="card-icon" style="background: #af52de;">📋</div>
+                <div class="card-content">
+                    <div class="card-label">Monitored Games</div>
+                    <div class="card-value" id="game-count">Loading...</div>
+                </div>
+            </div>
+        </div>
+        <div id="game-list" class="card fade-in" style="animation-delay: 0.4s; max-height: 300px; overflow-y: auto;">
+            <!-- Games will be loaded here -->
+        </div>
+
         <!-- Tweaks Section -->
         <div class="section-title">Active Tweaks</div>
-        <div class="card fade-in" style="animation-delay: 0.3s">
+        <div class="card fade-in" style="animation-delay: 0.45s">
             <div class="card-row">
                 <div class="card-icon" style="background: #ff9500;">📡</div>
                 <div class="card-content">
@@ -415,13 +460,13 @@
                 </label>
             </div>
             <div class="card-row">
-                <div class="card-icon" style="background: #34c759;">🎮</div>
+                <div class="card-icon" style="background: #007aff;">⚡</div>
                 <div class="card-content">
-                    <div class="card-label">Gaming Mode</div>
-                    <div class="card-value">CPU & GPU boost</div>
+                    <div class="card-label">Network Boost</div>
+                    <div class="card-value">BBR + Fast Open</div>
                 </div>
                 <label class="toggle">
-                    <input type="checkbox" checked id="gaming-toggle">
+                    <input type="checkbox" checked id="network-toggle">
                     <span class="toggle-slider"></span>
                 </label>
             </div>
@@ -435,14 +480,6 @@
                     <input type="checkbox" checked id="zram-toggle">
                     <span class="toggle-slider"></span>
                 </label>
-            </div>
-            <div class="card-row">
-                <div class="card-icon" style="background: #ff3b30;">🚫</div>
-                <div class="card-content">
-                    <div class="card-label">Thermal Throttle</div>
-                    <div class="card-value">Monitoring active</div>
-                </div>
-                <span class="badge orange">Safe</span>
             </div>
         </div>
 
@@ -459,7 +496,6 @@
             tab.addEventListener('click', () => {
                 tabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                // Haptic feedback
                 if (navigator.vibrate) navigator.vibrate(10);
             });
         });
@@ -471,16 +507,88 @@
             });
         });
 
+        // Game list
+        const games = [
+            { name: 'Mobile Legends', package: 'com.mobile.legends', icon: '⚔️' },
+            { name: 'Genshin Impact', package: 'com.miHoYo.GenshinImpact', icon: '🌍' },
+            { name: 'PUBG Mobile', package: 'com.tencent.ig', icon: '🔫' },
+            { name: 'PUBG KR', package: 'com.pubg.krmobile', icon: '🔫' },
+            { name: 'Call of Duty', package: 'com.varena.codmobile', icon: '💣' },
+            { name: 'Clash of Clans', package: 'com.supercell.clashofclans', icon: '🏰' },
+            { name: 'Clash Royale', package: 'com.supercell.clashroyale', icon: '👑' },
+            { name: 'Brawl Stars', package: 'com.supercell.brawlstars', icon: '⭐' },
+            { name: 'FIFA Mobile', package: 'com.ea.gp.fifamobile', icon: '⚽' },
+            { name: 'Fortnite', package: 'com.epicgames.fortnite', icon: '🎯' },
+            { name: 'Wild Rift', package: 'com.riotgames.league.wildrift', icon: '🧙' },
+            { name: 'Free Fire', package: 'com.dts.freefireth', icon: '🔥' },
+            { name: 'Roblox', package: 'com.roblox.client', icon: '🎮' },
+            { name: 'Minecraft', package: 'com.mojang.minecraftpe', icon: '⛏️' }
+        ];
+
+        function renderGameList() {
+            const container = document.getElementById('game-list');
+            const countEl = document.getElementById('game-count');
+            
+            countEl.textContent = `${games.length} games monitored`;
+            
+            container.innerHTML = games.map(game => `
+                <div class="card-row">
+                    <div class="card-icon" style="background: #1c1c1e; font-size: 20px;">${game.icon}</div>
+                    <div class="card-content">
+                        <div class="card-label">${game.name}</div>
+                        <div class="card-value" style="font-size: 12px; font-family: monospace;">${game.package}</div>
+                    </div>
+                    <span class="badge green">Active</span>
+                </div>
+            `).join('');
+        }
+
         // Simulated real-time updates
+        let isGamingMode = false;
+        
         function updateStats() {
             document.getElementById('ping').textContent = Math.floor(Math.random() * 5 + 10);
             document.getElementById('cpu-freq').textContent = Math.floor(Math.random() * 400 + 1800);
             document.getElementById('ram').textContent = Math.floor(Math.random() * 1000 + 2000);
             document.getElementById('gpu-freq').textContent = Math.floor(Math.random() * 200 + 400);
+            
+            // Simulate mode detection
+            const modes = ['Balanced', 'Gaming', 'Battery'];
+            const currentMode = modes[Math.floor(Math.random() * 3)];
+            document.getElementById('current-mode').textContent = currentMode;
+            
+            const badge = document.getElementById('mode-badge');
+            if (currentMode === 'Gaming') {
+                badge.textContent = 'Gaming';
+                badge.className = 'badge green';
+                isGamingMode = true;
+            } else if (currentMode === 'Battery') {
+                badge.textContent = 'Battery';
+                badge.className = 'badge orange';
+                isGamingMode = false;
+            } else {
+                badge.textContent = 'Normal';
+                badge.className = 'badge';
+                isGamingMode = false;
+            }
+            
+            // Simulate foreground app detection
+            const apps = ['com.mobile.legends', 'com.miHoYo.GenshinImpact', 'com.android.launcher', 'com.android.settings'];
+            document.getElementById('foreground-app').textContent = apps[Math.floor(Math.random() * apps.length)];
         }
 
+        // Auto-game toggle
+        document.getElementById('autogame-toggle').addEventListener('change', function() {
+            if (this.checked) {
+                console.log('Auto-game enabled');
+            } else {
+                console.log('Auto-game disabled');
+            }
+        });
+
+        renderGameList();
         updateStats();
-        setInterval(updateStats, 2000);
+        setInterval(updateStats, 3000);
     </script>
 </body>
 </html>
