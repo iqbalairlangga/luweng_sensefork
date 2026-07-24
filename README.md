@@ -1,171 +1,100 @@
-# LuwengSense Pro v3.0
+# LuwengSense Pro v3.2
 
 > **Fork dari [LuwengSense](https://github.com/KepalaLuweng/LuwengSense) dengan real tweaks yang terbukti work.**
 
 ---
 
-## Tentang Project Ini
+## What's New in v3.2
 
-**LuwengSense Pro** adalah versi **fork** dari module Magisk/KernelSU bernama **LuwengSense** (Original) yang dibuat oleh KepalaLuweng.
+### Gaming Mode - Significant FPS Stability
+- **Frame pacing optimization** via `debug.sf.latch_unsignaled`, `render_dirty_regions`, `disable_backpressure`
+- **85% min CPU frequency** locked - prevents frame drops during heavy scenes
+- **100% schedtune boost** + all cores assigned to top-app
+- **GPU locked to max** (Adreno + Mali all methods)
+- **Ultra low latency networking** (BBR + TCP fastopen + low latency)
+- **I/O none scheduler** with 4MB read ahead for asset loading
+- **VM swappiness=10** to minimize swap thrashing during gaming
+- **Thermal raised to 95C** for sustained performance
 
-Project ini dibuat karena versi original memiliki beberapa tweaks yang **placebo** (tidak benar-benar work). LuwengSense Pro dibersihkan dan hanya menggunakan tweaks yang **real** dan **terbukti** meningkatkan performa.
+### Balanced Mode - Improved Multitasking & Scrolling
+- **60% min CPU frequency** (up from 50%) for smoother app switching
+- **30% schedtune boost** + prefer_idle for responsive social media
+- **512KB read ahead** (up from 128KB) for smooth scrolling in feeds
+- **GPU 60% frequency** - enough for UI rendering without waste
+- **Increased background app limit** (`frozen_bg_disable=1`)
+- **Smooth scroll rendering** (`scroll_per_frame=0`, `max_frame_buffer_acquired_buffers=3`)
+- **bfq I/O scheduler** for fair multitasking I/O
 
-### Fokus Utama
-
-1. **Signal & Ping Stability** - Koneksi internet lebih stabil, ping lebih rendah
-2. **Gaming Performance** - Performa gaming lebih smooth, FPS lebih tinggi
-
----
-
-## Perbedaan dengan Original
-
-| Aspek | LuwengSense (Original) | LuwengSense Pro (Fork) |
-|-------|------------------------|------------------------|
-| **Thermal Throttle** | Placebo files (tidak work) | Real GPU tweaks |
-| **Memory Cgroup** | Cgroup hacks (ignored) | Proper VM tuning |
-| **Sysctl Values** | Banyak invalid | Validated & tested |
-| **DNS** | `setprop net.dns` (tidak work) | DNS over TLS (real) |
-| **Profiles** | 6+ profiles | 3 profiles (fokus) |
-| **WebUI** | Kompleks | iOS-style minimal |
-| **GPU Support** | Adreno only | Adreno + **Mali** |
-| **Auto Detect** | Tidak ada | Game + Screen detect |
-
----
-
-## Apa yang Dihapus (Placebo)
-
-```
-❌ Thermal placebo files
-   → File kosong tidak bisa disable thermal asli
-
-❌ Memory cgroup tweaks (/dev/memcg)
-   → Kernel modern mengabaikan ini
-
-❌ setprop net.dns1/dns2
-   → Tidak work di Android 9+
-
-❌ Sysctl values yang tidak ada
-   → Error silently, tidak ada efek
-```
-
----
-
-## Apa yang Ditambahkan (Real Tweaks)
-
-### Network & Signal Stability
-
-| Tweak | Value | Penjelasan |
-|-------|-------|------------|
-| TCP Congestion | BBR/CUBIC | Algoritma TCP terbaik |
-| Network Buffer | 64MB | TCP window besar |
-| TCP Fastopen | Enabled | Kurangi latency |
-| DNS | Cloudflare DoT | DNS cepat & aman |
-| Low Latency | Enabled | Untuk gaming |
-| Max Backlog | 65535 | Koneksi lebih banyak |
-
-### CPU Performance
-
-| Tweak | Value | Penjelasan |
-|-------|-------|------------|
-| Governor | Performance | Forced max performance |
-| Min Frequency | 70-85% | CPU tidak pernah turun |
-| schedtune Boost | Enabled | Priority boost |
-| Dex2OAT Threads | 8 | Fast app compilation |
-
-### GPU Performance
-
-| Tweak | Value | Penjelasan |
-|-------|-------|------------|
-| **Adreno (Qualcomm)** | Forced | Max frequency locked |
-| **Mali (MediaTek)** | Forced | NEW - support semua Mali |
-| **Mali (Samsung Exynos)** | Forced | NEW |
-| **Mali (ARM)** | Forced | NEW |
-| Force Clock On | 1 | GPU tidak sleep |
-| Force Rail On | 1 | GPU selalu aktif |
-| Idle Timer | 0 | Disable idle timeout |
-
-### I/O Performance
-
-| Tweak | Value | Penjelasan |
-|-------|-------|------------|
-| Scheduler | none/noop | Minimal overhead |
-| Read Ahead | 4MB | Storage cepat |
-| Queue Requests | 256 | Parallel I/O |
-| FSTRIM | On boot | Storage optimization |
-
-### Memory Management
-
-| Tweak | Value | Penjelasan |
-|-------|-------|------------|
-| ZRAM Size | 75% RAM | Kompresi agresif |
-| Compression | lz4 | Fast compression |
-| Swappiness | 40 | RAM optimal |
-| Min Free | 16MB | Reserve RAM |
-
-### Auto-Detect Features
-
-| Fitur | Penjelasan |
-|-------|------------|
-| Auto Gaming Mode | Deteksi game otomatis |
-| Auto Battery Mode | Screen off = battery |
-| 28+ Games | Pre-configured list |
-| Manual Add Game | Custom package name |
-| Exact Match | Akurasi tinggi |
-
-### WebUI Features
-
-| Fitur | Penjelasan |
-|-------|------------|
-| iOS Design | Blur effects, smooth |
-| Dark/Light Mode | Auto theme |
-| Real-time Stats | Ping, CPU, RAM, GPU |
-| Manual Game List | Add/remove games |
-| Toast Notifications | Notifikasi semua aksi |
-| Profile Tabs | Balanced/Gaming/Battery |
-| Toggle Switches | iOS-style |
-| Tweak Status | Indicator active |
+### Battery Mode - More Stable Power Saving
+- **CPU powersave governor** + lowest frequency locked
+- **GPU 1/6 max frequency** for minimal power draw
+- **Disable EGL/UBWC** rendering to save GPU power
+- **80% swappiness** - keep more in compressed RAM
+- **Adaptive battery saver enabled** + Doze enhanced
+- **WiFi sleep policy** = 2 (disconnect when screen off)
+- **Thermal lowered to 75C** for cooler operation
+- **Animations fully disabled** (0x scale)
 
 ---
 
 ## Mode Transitions
 
 ```
-┌─────────────────────────────────────────┐
-│            MODE TRANSITIONS             │
-├─────────────────────────────────────────┤
-│                                         │
-│   Screen OFF  ──────────►  Battery Mode │
-│       │                     (CPU/GPU low)│
-│       ▼                                │
-│   Screen ON   ◄──────────  Battery Mode │
-│       │                                │
-│       ▼                                │
-│   Normal App  ──────────►  Balanced     │
-│       │                     (Normal)    │
-│       ▼                                │
-│   Game Open   ──────────►  Gaming Mode  │
-│       │                     (MAX PERF)  │
-│       ▼                                │
-│   Game Close  ──────────►  Balanced     │
-│                             (Normal)    │
-└─────────────────────────────────────────┘
+Screen OFF  ──────────►  Battery Mode (v3.2: Extreme Saving)
+Screen ON   ◄──────────  Battery Mode
+Normal App  ──────────►  Balanced (v3.2: Smooth Multitasking)
+Game Open   ──────────►  Gaming (v3.2: FPS Stability)
+Game Close  ──────────►  Balanced
 ```
 
 ---
 
-## Gaming Mode vs Balanced Mode
+## Gaming vs Balanced vs Battery (v3.2)
 
-| Component | Balanced | Gaming |
-|-----------|----------|--------|
-| CPU Governor | schedutil | performance |
-| CPU Min Freq | 50% | **85%** |
-| GPU | Balanced | **MAX** |
-| Network | Normal | **Ultra Low Latency** |
-| I/O | bfq | **noop** |
-| Read Ahead | 128KB | **4MB** |
-| VM Swappiness | 40 | **10** |
-| Thermal | 85°C | **95°C** |
-| Logging | ON | **OFF** |
+| Component | Balanced | Gaming | Battery |
+|-----------|----------|--------|---------|
+| CPU Governor | schedutil | performance | powersave |
+| CPU Min Freq | **60%** | **85%** | **lowest** |
+| CPU Boost | **30%** | **100%** | **0%** |
+| GPU | **60%** | **MAX** | **1/6** |
+| Render Props | smooth scroll | frame pacing | power save |
+| Network | Normal | **Ultra Low Latency** | Normal |
+| I/O Scheduler | bfq | **none** | cfq |
+| Read Ahead | **512KB** | **4MB** | **64KB** |
+| VM Swappiness | 40 | **10** | **80** |
+| Thermal | 85C | **95C** | **75C** |
+| Animations | 0.5x | 0.5x | **0x** |
+| Logging | ON | **OFF** | ON |
+
+---
+
+## Real Tweaks (Not Placebo)
+
+### Network & Signal
+| Tweak | Value | Description |
+|-------|-------|-------------|
+| TCP Congestion | BBR | Best algorithm |
+| Network Buffer | 64MB | Large TCP window |
+| TCP Fastopen | 3 | Reduce latency |
+| DNS | Cloudflare DoT | Fast & secure |
+| Low Latency | 1 | For gaming |
+
+### GPU Support
+| GPU | Support |
+|-----|---------|
+| Adreno (Qualcomm) | Full |
+| Mali (MediaTek) | Full |
+| Mali (Samsung Exynos) | Full |
+| Mali (ARM) | Full |
+| Generic | Full |
+
+### Auto-Detect
+| Feature | Description |
+|---------|-------------|
+| Auto Gaming | Detect game open/close |
+| Auto Battery | Screen off = saving |
+| 25+ Games | Pre-configured |
+| Custom Games | Add via WebUI |
 
 ---
 
@@ -185,21 +114,7 @@ Project ini dibuat karena versi original memiliki beberapa tweaks yang **placebo
 
 ---
 
-## Cara Menggunakan WebUI
-
-1. Buka Magisk/KernelSU Manager
-2. Tap module **LuwengSense Pro**
-3. Tap tombol **"Action"** (atau buka browser ke `http://127.0.0.1:8080`)
-4. Di WebUI kamu bisa:
-   - Lihat status (Ping, CPU, RAM, GPU)
-   - Switch profile (Balanced/Gaming/Battery)
-   - Enable/disable Auto Gaming & Auto Battery
-   - Add/remove game dari list
-   - Lihat semua tweaks yang aktif
-
----
-
-## Games yang Sudah Terdaftar (28+)
+## Games Pre-configured (25+)
 
 ```
 Mobile Legends, Genshin Impact, PUBG Mobile, PUBG KR,
@@ -208,8 +123,6 @@ FIFA Mobile, Fortnite, Wild Rift, Free Fire,
 Roblox, Minecraft, Subway Surfers, Temple Run,
 Talking Tom, 8 Ball Pool, Hay Day, Among Us
 ```
-
-**Note:** Kamu bisa menambahkan game lain secara manual di WebUI!
 
 ---
 
@@ -229,5 +142,5 @@ Harap cantumkan credit jika menggunakan/memodifikasi.
 
 ---
 
-**Version:** 3.0  
+**Version:** 3.2
 **Last Updated:** July 2026

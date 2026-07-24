@@ -1,10 +1,10 @@
 #!/system/bin/sh
-# LuwengSense Pro - post-fs-data.sh
+# LuwengSense Pro v3.2 - post-fs-data.sh
 # Runs before zygote - apply early tweaks
 
 MODDIR=${0%/*}
 
-# Reset LMK properties to sane defaults
+# LMK tuned v3.2
 resetprop -n ro.lmk.low 1001
 resetprop -n ro.lmk.medium 1001
 resetprop -n ro.lmk.critical 1001
@@ -20,6 +20,9 @@ resetprop -n ro.lmk.swap_util_max 100
 resetprop -n ro.lmk.thrashing_limit 30
 resetprop -n ro.lmk.thrashing_limit_decay 50
 
-# Disable debug tracing for performance
+# v3.2: Additional early resets
 resetprop -n debug.atrace.tags.enableflags 0
 resetprop -n persist.traced.enable 0
+resetprop -n persist.logd.size 262144
+resetprop -n dalvik.vm.dex2oat-threads 8
+resetprop -n dalvik.vm.image-dex2oat-threads 8
