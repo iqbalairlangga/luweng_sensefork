@@ -845,6 +845,18 @@ return await r.json();
 
 let simCpu = 35, simRam = 55, simGpu = 40, simPing = 25, simFps = 60;
 let useSim = true;
+let realBattery = 100;
+let batteryCharging = false;
+
+// Real Battery API
+if ('getBattery' in navigator) {
+navigator.getBattery().then(bat => {
+realBattery = Math.round(bat.level * 100);
+batteryCharging = bat.charging;
+bat.addEventListener('levelchange', () => { realBattery = Math.round(bat.level * 100); });
+bat.addEventListener('chargingchange', () => { batteryCharging = bat.charging; });
+});
+}
 
 function simData() {
 // Simulate realistic fluctuation
@@ -891,7 +903,7 @@ document.getElementById('h-temp').textContent = d.temp + '°';
 updateGauge('perf', (d.cpu + d.gpu) / 2);
 updateGauge('cpu', d.cpu);
 updateGauge('ram', d.ram);
-updateGauge('bat', Math.max(0, 100 - d.temp * 0.5));
+updateGauge('bat', realBattery);
 
 // Monitor bars
 document.getElementById('m-cpu-pct').textContent = d.cpu + '%';
