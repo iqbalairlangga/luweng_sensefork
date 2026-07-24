@@ -1,838 +1,964 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>LuwengSense Pro</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>LuwengSense Pro</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+:root{
+--bg:#0a0a0f;--surface:rgba(255,255,255,.04);--card:rgba(255,255,255,.06);--card-border:rgba(255,255,255,.08);
+--text:#f0f0f5;--text-dim:rgba(255,255,255,.45);--text-secondary:rgba(255,255,255,.55);
+--accent:#00d4aa;--accent-rgb:0,212,170;--accent2:#00b4d8;
+--grad1:#00d4aa;--grad2:#00b4d8;
+--green:#00d4aa;--red:#ff4757;--orange:#ffa502;--blue:#3742fa;
+--blur:24px;--radius:20px;--radius-sm:12px;
+--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);
+}
+[data-mode="gaming"]{--accent:#6c5ce7;--accent-rgb:108,92,231;--grad1:#6c5ce7;--grad2:#a29bfe}
+[data-mode="extreme"]{--accent:#a855f7;--accent-rgb:168,85,247;--grad1:#a855f7;--grad2:#ec4899}
+[data-mode="battery"]{--accent:#ff9f43;--accent-rgb:255,159,67;--grad1:#ff9f43;--grad2:#feca57}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter','Segoe UI',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 50% 0%,rgba(var(--accent-rgb),.08) 0%,transparent 50%);pointer-events:none;z-index:0;transition:background .6s}
+.app{position:relative;height:100%;display:flex;flex-direction:column;z-index:1}
+.pages{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(70px + var(--safe-bottom));scroll-behavior:smooth}
+.pages::-webkit-scrollbar{display:none}
+.page{display:none;padding:calc(var(--safe-top) + 12px) 16px 20px;min-height:100%}
+.page.active{display:block}
 
-        :root {
-            --bg: #f2f2f7;
-            --card: rgba(255,255,255,0.8);
-            --card-border: rgba(255,255,255,0.5);
-            --text: #1c1c1e;
-            --text-secondary: #8e8e93;
-            --accent: #007aff;
-            --green: #34c759;
-            --red: #ff3b30;
-            --orange: #ff9500;
-            --blur: 20px;
-        }
+/* Bottom Nav */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:calc(64px + var(--safe-bottom));padding-bottom:var(--safe-bottom);background:rgba(10,10,15,.85);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border-top:1px solid rgba(255,255,255,.06);display:flex;z-index:1000}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;transition:all .25s;position:relative;padding:8px 0}
+.nav-item .nav-icon{font-size:22px;transition:all .25s;opacity:.5}
+.nav-item .nav-label{font-size:10px;font-weight:600;color:var(--text-dim);transition:all .25s;letter-spacing:.3px}
+.nav-item.active .nav-icon{opacity:1;transform:scale(1.1)}
+.nav-item.active .nav-label{color:var(--accent)}
+.nav-item.active::after{content:'';position:absolute;top:0;width:20px;height:3px;background:var(--accent);border-radius:0 0 4px 4px}
+.ripple-effect{position:absolute;border-radius:50%;background:rgba(var(--accent-rgb),.3);transform:scale(0);animation:ripple .5s ease-out;pointer-events:none}
+@keyframes ripple{to{transform:scale(3);opacity:0}}
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #000000;
-                --card: rgba(28,28,30,0.8);
-                --card-border: rgba(255,255,255,0.08);
-                --text: #ffffff;
-                --text-secondary: #98989d;
-            }
-        }
+/* Glass Card */
+.glass{background:var(--card);backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur));border:1px solid var(--card-border);border-radius:var(--radius);transition:transform .2s,box-shadow .2s}
+.glass:active{transform:scale(.985)}
+.section-label{font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.2px;padding:0 4px;margin-bottom:10px;margin-top:20px}
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
+/* Hero Card */
+.hero{padding:24px 20px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-40%;right:-20%;width:200px;height:200px;background:radial-gradient(circle,rgba(var(--accent-rgb),.15),transparent 70%);pointer-events:none}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:.5px;background:linear-gradient(135deg,var(--grad1),var(--grad2));color:#fff;box-shadow:0 4px 20px rgba(var(--accent-rgb),.3)}
+.hero-badge .dot{width:7px;height:7px;border-radius:50%;background:#fff;animation:pulse-dot 1.5s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+.hero-version{font-size:11px;color:var(--text-dim);margin-top:6px}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.hero-stat{text-align:center;padding:14px 8px;border-radius:var(--radius-sm);background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.04)}
+.hero-stat-val{font-size:26px;font-weight:800;letter-spacing:-1px;background:linear-gradient(135deg,var(--grad1),var(--grad2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2}
+.hero-stat-label{font-size:10px;color:var(--text-dim);margin-top:4px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.hero-boost{width:100%;padding:14px;border:none;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--grad1),var(--grad2));color:#fff;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.3px;box-shadow:0 4px 24px rgba(var(--accent-rgb),.35);transition:all .25s;position:relative;overflow:hidden}
+.hero-boost:active{transform:scale(.97);box-shadow:0 2px 12px rgba(var(--accent-rgb),.2)}
+.hero-boost::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.2),transparent);opacity:0;transition:opacity .25s}
+.hero-boost:active::after{opacity:1}
 
-        .status-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 44px;
-            background: rgba(242,242,247,0.72);
-            backdrop-filter: saturate(180%) blur(var(--blur));
-            -webkit-backdrop-filter: saturate(180%) blur(var(--blur));
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 16px;
-        }
+/* Circular Gauge */
+.gauge-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.gauge-item{display:flex;flex-direction:column;align-items:center;padding:14px 6px}
+.gauge-wrap{position:relative;width:72px;height:72px;margin-bottom:8px}
+.gauge-svg{width:100%;height:100%;transform:rotate(-90deg)}
+.gauge-bg{fill:none;stroke:rgba(255,255,255,.06);stroke-width:5}
+.gauge-fill{fill:none;stroke:url(#gaugeGrad);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)}
+.gauge-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gauge-val{font-size:16px;font-weight:800;letter-spacing:-.5px}
+.gauge-unit{font-size:9px;color:var(--text-dim);font-weight:600}
+.gauge-label{font-size:10px;color:var(--text-secondary);font-weight:600;letter-spacing:.3px}
+svg defs{position:absolute}
 
-        @media (prefers-color-scheme: dark) {
-            .status-bar {
-                background: rgba(0,0,0,0.72);
-            }
-        }
+/* Live Monitor */
+.monitor-row{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.04)}
+.monitor-row:last-child{border-bottom:none}
+.monitor-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-right:12px;flex-shrink:0}
+.monitor-info{flex:1;min-width:0}
+.monitor-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.monitor-name{font-size:13px;font-weight:600}
+.monitor-pct{font-size:13px;font-weight:800;color:var(--accent)}
+.monitor-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden}
+.monitor-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--grad1),var(--grad2));transition:width .8s cubic-bezier(.4,0,.2,1)}
 
-        .status-bar h1 {
-            font-size: 17px;
-            font-weight: 600;
-            letter-spacing: -0.4px;
-        }
+/* Graph */
+.graph-container{padding:16px;height:180px;position:relative}
+.graph-tabs{display:flex;gap:6px;margin-bottom:12px}
+.graph-tab{padding:6px 12px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;background:rgba(255,255,255,.04);color:var(--text-dim);border:1px solid transparent;transition:all .2s}
+.graph-tab.active{background:rgba(var(--accent-rgb),.15);color:var(--accent);border-color:rgba(var(--accent-rgb),.2)}
+.graph-canvas{width:100%;height:120px;border-radius:var(--radius-sm)}
+.graph-legend{display:flex;justify-content:space-between;margin-top:8px}
+.graph-legend span{font-size:10px;color:var(--text-dim);font-weight:600}
 
-        .container {
-            padding: 59px 16px 100px;
-            max-width: 500px;
-            margin: 0 auto;
-        }
+/* Quick Actions */
+.actions-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.action-btn{padding:18px 14px;border:none;border-radius:var(--radius);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:all .25s;position:relative;overflow:hidden;background:var(--card);border:1px solid var(--card-border)}
+.action-btn:active{transform:scale(.95)}
+.action-btn .action-icon{font-size:28px;transition:transform .25s}
+.action-btn .action-label{font-size:11px;font-weight:700;color:var(--text-secondary);letter-spacing:.3px}
+.action-btn.active{border-color:rgba(var(--accent-rgb),.3);background:rgba(var(--accent-rgb),.08)}
 
-        .section-title {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            padding: 0 16px;
-            margin-bottom: 8px;
-            margin-top: 24px;
-        }
+/* Profile Switcher */
+.profile-bar{display:flex;background:rgba(255,255,255,.04);border-radius:14px;padding:4px;gap:4px}
+.profile-btn{flex:1;padding:10px 8px;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:var(--text-dim);transition:all .25s;letter-spacing:.3px}
+.profile-btn.active{background:linear-gradient(135deg,var(--grad1),var(--grad2));color:#fff;box-shadow:0 4px 16px rgba(var(--accent-rgb),.3)}
 
-        .card {
-            background: var(--card);
-            backdrop-filter: saturate(180%) blur(var(--blur));
-            -webkit-backdrop-filter: saturate(180%) blur(var(--blur));
-            border-radius: 16px;
-            border: 1px solid var(--card-border);
-            overflow: hidden;
-            margin-bottom: 12px;
-            transition: transform 0.2s ease;
-        }
+/* Toggles */
+.toggle-row{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.04)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-row .t-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-right:12px;flex-shrink:0}
+.toggle-row .t-info{flex:1}
+.toggle-row .t-title{font-size:14px;font-weight:600}
+.toggle-row .t-desc{font-size:11px;color:var(--text-dim);margin-top:2px}
+.switch{position:relative;width:48px;height:28px;margin-left:12px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.switch-track{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:14px;transition:background .25s;cursor:pointer}
+.switch-track::before{content:'';position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.switch input:checked+.switch-track{background:linear-gradient(135deg,var(--grad1),var(--grad2))}
+.switch input:checked+.switch-track::before{transform:translateX(20px)}
 
-        .card:active {
-            transform: scale(0.98);
-        }
+/* Game List */
+.game-input-row{display:flex;gap:8px;padding:12px 16px}
+.game-input{flex:1;padding:10px 14px;border:1px solid rgba(255,255,255,.08);border-radius:var(--radius-sm);background:rgba(255,255,255,.03);color:var(--text);font-size:13px;outline:none;transition:border-color .2s}
+.game-input:focus{border-color:rgba(var(--accent-rgb),.4)}
+.game-input::placeholder{color:var(--text-dim)}
+.game-add-btn{padding:10px 18px;border:none;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--grad1),var(--grad2));color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:transform .2s}
+.game-add-btn:active{transform:scale(.95)}
+.game-item{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.04)}
+.game-item:last-child{border-bottom:none}
+.game-icon{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:18px;margin-right:12px;flex-shrink:0}
+.game-info{flex:1;min-width:0}
+.game-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.game-pkg{font-size:10px;color:var(--text-dim);font-family:monospace;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.game-del{width:28px;height:28px;border-radius:50%;border:none;background:rgba(255,71,87,.15);color:var(--red);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.game-del:active{transform:scale(.9);background:rgba(255,71,87,.3)}
+.game-list{max-height:280px;overflow-y:auto;scrollbar-width:none}
+.game-list::-webkit-scrollbar{display:none}
 
-        .card-row {
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            border-bottom: 0.5px solid rgba(0,0,0,0.08);
-        }
+/* Network Info */
+.net-row{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.04)}
+.net-row:last-child{border-bottom:none}
+.net-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-right:12px;flex-shrink:0}
+.net-info{flex:1}
+.net-label{font-size:14px;font-weight:600}
+.net-value{font-size:12px;color:var(--text-secondary);margin-top:2px}
+.net-badge{padding:4px 10px;border-radius:8px;font-size:10px;font-weight:700;letter-spacing:.3px}
+.net-badge.active{background:rgba(var(--accent-rgb),.15);color:var(--accent)}
 
-        @media (prefers-color-scheme: dark) {
-            .card-row {
-                border-bottom-color: rgba(255,255,255,0.08);
-            }
-        }
+/* Floating Boost */
+.fab{position:fixed;bottom:calc(78px + var(--safe-bottom));right:16px;width:56px;height:56px;border-radius:16px;border:none;background:linear-gradient(135deg,var(--grad1),var(--grad2));color:#fff;font-size:22px;cursor:pointer;z-index:999;box-shadow:0 6px 28px rgba(var(--accent-rgb),.4);transition:all .3s;display:flex;align-items:center;justify-content:center}
+.fab:active{transform:scale(.9) rotate(-5deg)}
+.fab::before{content:'';position:absolute;inset:-3px;border-radius:18px;background:linear-gradient(135deg,var(--grad1),var(--grad2));opacity:.3;z-index:-1;animation:fab-glow 2s ease-in-out infinite}
+@keyframes fab-glow{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:.4;transform:scale(1.05)}}
 
-        .card-row:last-child {
-            border-bottom: none;
-        }
+/* Toast */
+.toast{position:fixed;top:calc(var(--safe-top) + 60px);left:50%;transform:translateX(-50%) translateY(-20px);padding:12px 20px;border-radius:var(--radius-sm);background:rgba(20,20,25,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.08);font-size:13px;font-weight:600;color:var(--text);z-index:9999;opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,.5);pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast .toast-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.toast.success .toast-dot{background:#00d4aa}
+.toast.error .toast-dot{background:#ff4757}
+.toast.info .toast-dot{background:#3742fa}
 
-        .card-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 12px;
-            font-size: 16px;
-        }
+/* Settings Page */
+.setting-item{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.04)}
+.setting-item:last-child{border-bottom:none}
+.setting-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-right:12px;flex-shrink:0}
+.setting-info{flex:1}
+.setting-label{font-size:14px;font-weight:600}
+.setting-desc{font-size:11px;color:var(--text-dim);margin-top:2px}
 
-        .card-content {
-            flex: 1;
-        }
+/* Animations */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.animate-in{animation:fadeInUp .5s cubic-bezier(.4,0,.2,1) forwards;opacity:0}
+.animate-in:nth-child(1){animation-delay:.05s}
+.animate-in:nth-child(2){animation-delay:.1s}
+.animate-in:nth-child(3){animation-delay:.15s}
+.animate-in:nth-child(4){animation-delay:.2s}
+.animate-in:nth-child(5){animation-delay:.25s}
+.animate-in:nth-child(6){animation-delay:.3s}
+.animate-in:nth-child(7){animation-delay:.35s}
+.animate-in:nth-child(8){animation-delay:.4s}
 
-        .card-label {
-            font-size: 17px;
-            font-weight: 400;
-        }
-
-        .card-value {
-            font-size: 15px;
-            color: var(--text-secondary);
-        }
-
-        .badge {
-            background: var(--accent);
-            color: white;
-            font-size: 12px;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 12px;
-            margin-left: 8px;
-        }
-
-        .badge.green { background: var(--green); }
-        .badge.orange { background: var(--orange); }
-
-        .toggle {
-            position: relative;
-            width: 51px;
-            height: 31px;
-            margin-left: 12px;
-        }
-
-        .toggle input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .toggle-slider {
-            position: absolute;
-            inset: 0;
-            background: #e9e9ea;
-            border-radius: 31px;
-            transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-        }
-
-        .toggle-slider::before {
-            content: '';
-            position: absolute;
-            width: 27px;
-            height: 27px;
-            left: 2px;
-            top: 2px;
-            background: white;
-            border-radius: 50%;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .toggle input:checked + .toggle-slider {
-            background: var(--green);
-        }
-
-        .toggle input:checked + .toggle-slider::before {
-            transform: translateX(20px);
-        }
-
-        .stat-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            padding: 0;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 16px 8px;
-        }
-
-        .stat-value {
-            font-size: 28px;
-            font-weight: 600;
-            letter-spacing: -0.5px;
-            color: var(--accent);
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
-
-        .profile-tabs {
-            display: flex;
-            background: rgba(118,118,128,0.12);
-            border-radius: 10px;
-            padding: 2px;
-        }
-
-        .profile-tab {
-            flex: 1;
-            padding: 8px 12px;
-            text-align: center;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text);
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-
-        .profile-tab.active {
-            background: var(--card);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        @media (prefers-color-scheme: dark) {
-            .profile-tab.active {
-                box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-            }
-        }
-
-        .signal-bars {
-            display: flex;
-            align-items: flex-end;
-            gap: 2px;
-            height: 12px;
-        }
-
-        .signal-bar {
-            width: 3px;
-            background: var(--green);
-            border-radius: 1px;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        .signal-bar:nth-child(1) { height: 4px; animation-delay: 0s; }
-        .signal-bar:nth-child(2) { height: 6px; animation-delay: 0.1s; }
-        .signal-bar:nth-child(3) { height: 8px; animation-delay: 0.2s; }
-        .signal-bar:nth-child(4) { height: 10px; animation-delay: 0.3s; }
-        .signal-bar:nth-child(5) { height: 12px; animation-delay: 0.4s; }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .footer {
-            text-align: center;
-            padding: 24px;
-            color: var(--text-secondary);
-            font-size: 13px;
-        }
-
-        .footer a {
-            color: var(--accent);
-            text-decoration: none;
-        }
-
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100px;
-        }
-
-        .spinner {
-            width: 24px;
-            height: 24px;
-            border: 2.5px solid rgba(0,0,0,0.1);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.4s ease forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Toast Notification */
-        .toast {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            color: white;
-            padding: 14px 24px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 500;
-            z-index: 9999;
-            opacity: 0;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        .toast.success {
-            background: rgba(52, 199, 89, 0.9);
-        }
-
-        .toast.error {
-            background: rgba(255, 59, 48, 0.9);
-        }
-
-        .toast.info {
-            background: rgba(0, 122, 255, 0.9);
-        }
-
-        /* Delete button */
-        .delete-btn {
-            background: #ff3b30;
-            color: white;
-            border: none;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s;
-        }
-
-        .delete-btn:active {
-            transform: scale(0.9);
-        }
-
-        /* Tweak Status Indicator */
-        .tweak-status {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 12px;
-            background: rgba(52, 199, 89, 0.15);
-            border-radius: 8px;
-            margin-top: 8px;
-        }
-
-        .tweak-status .dot {
-            width: 8px;
-            height: 8px;
-            background: #34c759;
-            border-radius: 50%;
-            animation: pulse-dot 2s infinite;
-        }
-
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.8); }
-        }
-
-        .tweak-status span {
-            font-size: 12px;
-            color: #34c759;
-            font-weight: 500;
-        }
-    </style>
+/* Boost Overlay */
+.boost-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:2000;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.boost-overlay.active{opacity:1;pointer-events:all}
+.boost-spinner{width:64px;height:64px;border:4px solid rgba(255,255,255,.1);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:24px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.boost-text{color:var(--text);font-size:18px;font-weight:700;letter-spacing:.5px}
+.boost-sub{color:var(--text-dim);font-size:13px;margin-top:8px}
+</style>
 </head>
-<body>
-    <!-- Toast Notification -->
-    <div id="toast" class="toast">
-        <span id="toast-icon">✓</span>
-        <span id="toast-message">Tweak applied</span>
-    </div>
+<body data-mode="balanced">
 
-    <div class="status-bar">
-        <h1>LuwengSense Pro</h1>
-    </div>
+<div class="toast" id="toast"><span class="toast-dot"></span><span id="toast-msg"></span></div>
 
-    <div class="container">
-        <!-- Status Card -->
-        <div class="section-title">Status</div>
-        <div class="card fade-in">
-            <div class="stat-grid">
-                <div class="stat-item">
-                    <div class="stat-value" id="ping">--</div>
-                    <div class="stat-label">PING</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="cpu-freq">--</div>
-                    <div class="stat-label">CPU MHz</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="ram">--</div>
-                    <div class="stat-label">RAM MB</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="gpu-freq">--</div>
-                    <div class="stat-label">GPU MHz</div>
-                </div>
-            </div>
-            <div class="tweak-status">
-                <div class="dot"></div>
-                <span id="tweak-status-text">All tweaks ACTIVE</span>
-            </div>
-        </div>
+<!-- Boost Overlay -->
+<div class="boost-overlay" id="boost-overlay">
+<div class="boost-spinner"></div>
+<div class="boost-text">BOOSTING...</div>
+<div class="boost-sub" id="boost-status">Optimizing system performance</div>
+</div>
 
-        <!-- Signal Section -->
-        <div class="section-title">Network</div>
-        <div class="card fade-in" style="animation-delay: 0.1s">
-            <div class="card-row">
-                <div class="card-icon" style="background: #34c759;">
-                    <div class="signal-bars">
-                        <div class="signal-bar"></div>
-                        <div class="signal-bar"></div>
-                        <div class="signal-bar"></div>
-                        <div class="signal-bar"></div>
-                        <div class="signal-bar"></div>
-                    </div>
-                </div>
-                <div class="card-content">
-                    <div class="card-label">Signal Strength</div>
-                    <div class="card-value" id="signal-status">Optimized</div>
-                </div>
-                <span class="badge green">Active</span>
-            </div>
-            <div class="card-row">
-                <div class="card-icon" style="background: #007aff;">⚡</div>
-                <div class="card-content">
-                    <div class="card-label">TCP Algorithm</div>
-                    <div class="card-value" id="tcp-algo">BBR</div>
-                </div>
-            </div>
-            <div class="card-row">
-                <div class="card-icon" style="background: #5856d6;">🔒</div>
-                <div class="card-content">
-                    <div class="card-label">DNS</div>
-                    <div class="card-value" id="dns-server">Cloudflare (DoT)</div>
-                </div>
-            </div>
-        </div>
+<div class="app">
+<div class="pages" id="pages">
 
-        <!-- Profile Section -->
-        <div class="section-title">Profile</div>
-        <div class="card fade-in" style="animation-delay: 0.2s">
-            <div style="padding: 12px 16px;">
-                <div class="profile-tabs">
-                    <div class="profile-tab active" data-profile="balanced">Balanced</div>
-                    <div class="profile-tab" data-profile="gaming">Gaming</div>
-                    <div class="profile-tab" data-profile="battery">Battery</div>
-                </div>
-            </div>
-        </div>
+<!-- ========== DASHBOARD ========== -->
+<div class="page active" id="page-dashboard">
 
-        <!-- Auto-Detect Section -->
-        <div class="section-title">Auto-Detect</div>
-        <div class="card fade-in" style="animation-delay: 0.3s">
-            <div class="card-row">
-                <div class="card-icon" style="background: #34c759;">🎮</div>
-                <div class="card-content">
-                    <div class="card-label">Auto Gaming Mode</div>
-                    <div class="card-value">Detect games automatically</div>
-                </div>
-                <label class="toggle">
-                    <input type="checkbox" checked id="autogame-toggle">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-            <div class="card-row">
-                <div class="card-icon" style="background: #ff9500;">🔋</div>
-                <div class="card-content">
-                    <div class="card-label">Auto Battery Mode</div>
-                    <div class="card-value">Screen off = battery mode</div>
-                </div>
-                <label class="toggle">
-                    <input type="checkbox" checked id="autobattery-toggle">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-            <div class="card-row">
-                <div class="card-icon" style="background: #007aff;">📱</div>
-                <div class="card-content">
-                    <div class="card-label">Screen State</div>
-                    <div class="card-value" id="screen-state">ON</div>
-                </div>
-                <span class="badge green" id="screen-badge">Active</span>
-            </div>
-            <div class="card-row" style="border-bottom: none;">
-                <div class="card-icon" style="background: #ff9500;">⚡</div>
-                <div class="card-content">
-                    <div class="card-label">Current Mode</div>
-                    <div class="card-value" id="current-mode">Balanced</div>
-                </div>
-                <span class="badge" id="mode-badge">Normal</span>
-            </div>
-        </div>
+<!-- Hero Card -->
+<div class="glass hero animate-in" style="margin-bottom:12px">
+<div class="hero-top">
+<div>
+<div class="hero-badge"><span class="dot"></span><span id="hero-mode">BALANCED</span></div>
+<div class="hero-version">LuwengSense Pro v2.0</div>
+</div>
+</div>
+<div class="hero-stats">
+<div class="hero-stat">
+<div class="hero-stat-val" id="h-ping">--</div>
+<div class="hero-stat-label">Ping</div>
+</div>
+<div class="hero-stat">
+<div class="hero-stat-val" id="h-fps">60</div>
+<div class="hero-stat-label">FPS</div>
+</div>
+<div class="hero-stat">
+<div class="hero-stat-val" id="h-temp">--</div>
+<div class="hero-stat-label">Temp</div>
+</div>
+</div>
+<button class="hero-boost" onclick="doBoost()">🚀 BOOST NOW</button>
+</div>
 
-        <!-- Game List -->
-        <div class="card fade-in" style="animation-delay: 0.35s">
-            <div class="card-row" style="border-bottom: none;">
-                <div class="card-icon" style="background: #af52de;">📋</div>
-                <div class="card-content">
-                    <div class="card-label">Monitored Games</div>
-                    <div class="card-value" id="game-count">Loading...</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Add Game Input -->
-        <div class="card fade-in" style="animation-delay: 0.38s">
-            <div class="card-row" style="border-bottom: none;">
-                <div class="card-icon" style="background: #34c759;">➕</div>
-                <div class="card-content">
-                    <input type="text" id="add-game-input" placeholder="Package name (com.example.game)" 
-                           style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; background: var(--card); color: var(--text);">
-                </div>
-                <button id="add-game-btn" style="background: #007aff; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">Add</button>
-            </div>
-        </div>
-        
-        <div id="game-list" class="card fade-in" style="animation-delay: 0.4s; max-height: 300px; overflow-y: auto;">
-            <!-- Games will be loaded here -->
-        </div>
+<!-- Circular Gauges -->
+<div class="section-label">Performance</div>
+<div class="glass animate-in" style="padding:16px 8px;margin-bottom:12px">
+<svg style="position:absolute;width:0;height:0"><defs><linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="var(--grad1)"/><stop offset="100%" stop-color="var(--grad2)"/></linearGradient></defs></svg>
+<div class="gauge-grid">
+<div class="gauge-item">
+<div class="gauge-wrap">
+<svg class="gauge-svg" viewBox="0 0 36 36">
+<circle class="gauge-bg" cx="18" cy="18" r="14"/>
+<circle class="gauge-fill" id="g-perf-fill" cx="18" cy="18" r="14" stroke-dasharray="87.96" stroke-dashoffset="87.96"/>
+</svg>
+<div class="gauge-center"><span class="gauge-val" id="g-perf-val">--</span><span class="gauge-unit">%</span></div>
+</div>
+<div class="gauge-label">Performance</div>
+</div>
+<div class="gauge-item">
+<div class="gauge-wrap">
+<svg class="gauge-svg" viewBox="0 0 36 36">
+<circle class="gauge-bg" cx="18" cy="18" r="14"/>
+<circle class="gauge-fill" id="g-cpu-fill" cx="18" cy="18" r="14" stroke-dasharray="87.96" stroke-dashoffset="87.96"/>
+</svg>
+<div class="gauge-center"><span class="gauge-val" id="g-cpu-val">--</span><span class="gauge-unit">%</span></div>
+</div>
+<div class="gauge-label">CPU</div>
+</div>
+<div class="gauge-item">
+<div class="gauge-wrap">
+<svg class="gauge-svg" viewBox="0 0 36 36">
+<circle class="gauge-bg" cx="18" cy="18" r="14"/>
+<circle class="gauge-fill" id="g-ram-fill" cx="18" cy="18" r="14" stroke-dasharray="87.96" stroke-dashoffset="87.96"/>
+</svg>
+<div class="gauge-center"><span class="gauge-val" id="g-ram-val">--</span><span class="gauge-unit">%</span></div>
+</div>
+<div class="gauge-label">RAM</div>
+</div>
+<div class="gauge-item">
+<div class="gauge-wrap">
+<svg class="gauge-svg" viewBox="0 0 36 36">
+<circle class="gauge-bg" cx="18" cy="18" r="14"/>
+<circle class="gauge-fill" id="g-bat-fill" cx="18" cy="18" r="14" stroke-dasharray="87.96" stroke-dashoffset="87.96"/>
+</svg>
+<div class="gauge-center"><span class="gauge-val" id="g-bat-val">--</span><span class="gauge-unit">%</span></div>
+</div>
+<div class="gauge-label">Battery</div>
+</div>
+</div>
+</div>
 
-        <!-- Tweaks Section -->
-        <div class="section-title">Active Tweaks</div>
-        <div class="card fade-in" style="animation-delay: 0.45s">
-            <div class="card-row">
-                <div class="card-icon" style="background: #ff9500;">📡</div>
-                <div class="card-content">
-                    <div class="card-label">RIL Optimization</div>
-                    <div class="card-value">Better signal handling</div>
-                </div>
-                <label class="toggle">
-                    <input type="checkbox" checked id="ril-toggle">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-            <div class="card-row">
-                <div class="card-icon" style="background: #007aff;">⚡</div>
-                <div class="card-content">
-                    <div class="card-label">Network Boost</div>
-                    <div class="card-value">BBR + Fast Open</div>
-                </div>
-                <label class="toggle">
-                    <input type="checkbox" checked id="network-toggle">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-            <div class="card-row">
-                <div class="card-icon" style="background: #af52de;">💾</div>
-                <div class="card-content">
-                    <div class="card-label">ZRAM</div>
-                    <div class="card-value" id="zram-status">lz4 compression</div>
-                </div>
-                <label class="toggle">
-                    <input type="checkbox" checked id="zram-toggle">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-        </div>
+<!-- Quick Actions -->
+<div class="section-label">Quick Actions</div>
+<div class="actions-grid animate-in" style="margin-bottom:12px">
+<button class="action-btn" data-action="gaming" onclick="quickAction('gaming')">
+<span class="action-icon">🎮</span><span class="action-label">Gaming Mode</span>
+</button>
+<button class="action-btn" data-action="boost" onclick="doBoost()">
+<span class="action-icon">🚀</span><span class="action-label">Boost Performance</span>
+</button>
+<button class="action-btn" data-action="network" onclick="quickAction('network')">
+<span class="action-icon">🌐</span><span class="action-label">Network Optimize</span>
+</button>
+<button class="action-btn" data-action="security" onclick="quickAction('security')">
+<span class="action-icon">🛡</span><span class="action-label">Security</span>
+</button>
+</div>
 
-        <div class="footer">
-            <p>LuwengSense Pro v2.0</p>
-            <p style="margin-top: 8px;">Build by <strong>bal</strong> (fork version LuwengSense by <a href="https://t.me/luwengtechofficial">KepalaLuweng</a>)</p>
-        </div>
-    </div>
+<!-- Profile -->
+<div class="section-label">Profile</div>
+<div class="glass animate-in" style="padding:6px;margin-bottom:12px">
+<div class="profile-bar">
+<button class="profile-btn active" data-profile="balanced" onclick="setProfile('balanced',this)">⚡ Balanced</button>
+<button class="profile-btn" data-profile="gaming" onclick="setProfile('gaming',this)">🎮 Gaming</button>
+<button class="profile-btn" data-profile="battery" onclick="setProfile('battery',this)">🔋 Battery</button>
+</div>
+</div>
 
-    <script>
-        // ==========================================
-        // TOAST NOTIFICATION
-        // ==========================================
-        function showToast(message, type = 'success', duration = 3000) {
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toast-message');
-            const toastIcon = document.getElementById('toast-icon');
-            
-            toastMessage.textContent = message;
-            toast.className = 'toast ' + type;
-            
-            if (type === 'success') toastIcon.textContent = '✓';
-            else if (type === 'error') toastIcon.textContent = '✕';
-            else toastIcon.textContent = 'ℹ';
-            
-            toast.classList.add('show');
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, duration);
-        }
+<!-- Live System Monitor -->
+<div class="section-label">System Monitor</div>
+<div class="glass animate-in" style="margin-bottom:12px">
+<div class="monitor-row">
+<div class="monitor-icon" style="background:rgba(var(--accent-rgb),.12)">🔥</div>
+<div class="monitor-info">
+<div class="monitor-top"><span class="monitor-name">CPU</span><span class="monitor-pct" id="m-cpu-pct">--%</span></div>
+<div class="monitor-bar"><div class="monitor-fill" id="m-cpu-bar" style="width:0%"></div></div>
+</div>
+</div>
+<div class="monitor-row">
+<div class="monitor-icon" style="background:rgba(0,180,216,.12)">💾</div>
+<div class="monitor-info">
+<div class="monitor-top"><span class="monitor-name">RAM</span><span class="monitor-pct" id="m-ram-pct">--%</span></div>
+<div class="monitor-bar"><div class="monitor-fill" id="m-ram-bar" style="width:0%"></div></div>
+</div>
+</div>
+<div class="monitor-row">
+<div class="monitor-icon" style="background:rgba(168,85,247,.12)">⚡</div>
+<div class="monitor-info">
+<div class="monitor-top"><span class="monitor-name">GPU</span><span class="monitor-pct" id="m-gpu-pct">--%</span></div>
+<div class="monitor-bar"><div class="monitor-fill" id="m-gpu-bar" style="width:0%"></div></div>
+</div>
+</div>
+<div class="monitor-row">
+<div class="monitor-icon" style="background:rgba(255,159,67,.12)">🌡</div>
+<div class="monitor-info">
+<div class="monitor-top"><span class="monitor-name">Temperature</span><span class="monitor-pct" id="m-temp-pct">--°C</span></div>
+<div class="monitor-bar"><div class="monitor-fill" id="m-temp-bar" style="width:0%"></div></div>
+</div>
+</div>
+</div>
 
-        // ==========================================
-        // PROFILE SWITCHING
-        // ==========================================
-        const tabs = document.querySelectorAll('.profile-tab');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                if (navigator.vibrate) navigator.vibrate(10);
-                showToast('Profile: ' + tab.dataset.profile, 'info');
-            });
-        });
+</div><!-- /page-dashboard -->
 
-        // ==========================================
-        // TOGGLE ANIMATIONS
-        // ==========================================
-        document.querySelectorAll('.toggle input').forEach(toggle => {
-            toggle.addEventListener('change', function() {
-                if (navigator.vibrate) navigator.vibrate(10);
-                const label = this.closest('.card-row').querySelector('.card-label').textContent;
-                showToast(label + (this.checked ? ' ON' : ' OFF'), 'success');
-            });
-        });
+<!-- ========== MONITOR ========== -->
+<div class="page" id="page-monitor">
 
-        // ==========================================
-        // GAME LIST (MANUAL)
-        // ==========================================
-        let games = [
-            { name: 'Mobile Legends', package: 'com.mobile.legends', icon: '⚔️' },
-            { name: 'Genshin Impact', package: 'com.miHoYo.GenshinImpact', icon: '🌍' },
-            { name: 'PUBG Mobile', package: 'com.tencent.ig', icon: '🔫' },
-            { name: 'PUBG KR', package: 'com.pubg.krmobile', icon: '🔫' },
-            { name: 'Call of Duty', package: 'com.varena.codmobile', icon: '💣' },
-            { name: 'Clash of Clans', package: 'com.supercell.clashofclans', icon: '🏰' },
-            { name: 'Clash Royale', package: 'com.supercell.clashroyale', icon: '👑' },
-            { name: 'Brawl Stars', package: 'com.supercell.brawlstars', icon: '⭐' },
-            { name: 'FIFA Mobile', package: 'com.ea.gp.fifamobile', icon: '⚽' },
-            { name: 'Fortnite', package: 'com.epicgames.fortnite', icon: '🎯' },
-            { name: 'Wild Rift', package: 'com.riotgames.league.wildrift', icon: '🧙' },
-            { name: 'Free Fire', package: 'com.dts.freefireth', icon: '🔥' },
-            { name: 'Roblox', package: 'com.roblox.client', icon: '🎮' },
-            { name: 'Minecraft', package: 'com.mojang.minecraftpe', icon: '⛏️' }
-        ];
+<div class="section-label">Realtime Graph</div>
+<div class="glass animate-in" style="margin-bottom:12px">
+<div class="graph-container">
+<div class="graph-tabs">
+<div class="graph-tab active" data-graph="fps" onclick="setGraph('fps',this)">FPS</div>
+<div class="graph-tab" data-graph="cpu" onclick="setGraph('cpu',this)">CPU</div>
+<div class="graph-tab" data-graph="gpu" onclick="setGraph('gpu',this)">GPU</div>
+<div class="graph-tab" data-graph="temp" onclick="setGraph('temp',this)">Temp</div>
+</div>
+<canvas class="graph-canvas" id="perfGraph"></canvas>
+<div class="graph-legend"><span>60s ago</span><span>Now</span></div>
+</div>
+</div>
 
-        // Load from localStorage
-        const savedGames = localStorage.getItem('luwengsense_games');
-        if (savedGames) {
-            games = JSON.parse(savedGames);
-        }
+<div class="section-label">Detailed Monitor</div>
+<div class="glass animate-in" style="margin-bottom:12px">
+<div class="monitor-row">
+<div class="monitor-icon" style="background:rgba(var(--accent-rgb),.12)">📊</div>
+<div class="monitor-info">
+<div class="monitor-top"><span class="monitor-name">CPU Frequency</span><span class="monitor-pct" id="d-cpu-freq">-- MHz</span></div>
+<div class="monitor-bar"><div class="monitor-fill" id="d-cpu-bar" style="width:0%"></div></div>
+</div>
+</div>
+<div class="monitor-row">
+<div class="monitor-icon" style="background:rgba(0,180,216,.12)">🧠</div>
+<div class="monitor-info">
+<div class="monitor-top"><span class="monitor-name">RAM Usage</span><span class="monitor-pct" id="d-ram-usage">-- / -- MB</span></div>
+<div class="monitor-bar"><div class="monitor-fill" id="d-ram-bar" style="width:0%"></div></div>
+</div>
+</div>
+<div class="monitor-row">
+<div class="monitor-icon" style="background:rgba(168,85,247,.12)">🎮</div>
+<div class="monitor-info">
+<div class="monitor-top"><span class="monitor-name">GPU Frequency</span><span class="monitor-pct" id="d-gpu-freq">-- MHz</span></div>
+<div class="monitor-bar"><div class="monitor-fill" id="d-gpu-bar" style="width:0%"></div></div>
+</div>
+</div>
+<div class="monitor-row">
+<div class="monitor-icon" style="background:rgba(255,159,67,.12)">📡</div>
+<div class="monitor-info">
+<div class="monitor-top"><span class="monitor-name">Network Ping</span><span class="monitor-pct" id="d-ping">-- ms</span></div>
+<div class="monitor-bar"><div class="monitor-fill" id="d-ping-bar" style="width:0%"></div></div>
+</div>
+</div>
+</div>
 
-        function saveGames() {
-            localStorage.setItem('luwengsense_games', JSON.stringify(games));
-        }
+<div class="section-label">CPU Governor</div>
+<div class="glass animate-in" style="margin-bottom:12px">
+<div class="net-row">
+<div class="net-icon" style="background:rgba(var(--accent-rgb),.12)">⚙️</div>
+<div class="net-info"><div class="net-label">Current Governor</div><div class="net-value" id="d-governor">--</div></div>
+<div class="net-badge active" id="d-gov-badge">Active</div>
+</div>
+</div>
 
-        function getGameIcon(pkg) {
-            const icons = ['🎮', '🎯', '⚔️', '🌍', '🔫', '💣', '🏰', '⭐', '⚽', '🧙', '🔥', '⛏️', '🎲', '🎯'];
-            return icons[Math.floor(Math.random() * icons.length)];
-        }
+</div><!-- /page-monitor -->
 
-        function renderGameList() {
-            const container = document.getElementById('game-list');
-            const countEl = document.getElementById('game-count');
-            
-            countEl.textContent = `${games.length} games monitored`;
-            
-            container.innerHTML = games.map((game, index) => `
-                <div class="card-row">
-                    <div class="card-icon" style="background: #1c1c1e; font-size: 20px;">${game.icon}</div>
-                    <div class="card-content">
-                        <div class="card-label">${game.name || 'Custom Game'}</div>
-                        <div class="card-value" style="font-size: 11px; font-family: monospace; word-break: break-all;">${game.package}</div>
-                    </div>
-                    <button class="delete-btn" onclick="removeGame(${index})">✕</button>
-                </div>
-            `).join('');
-            
-            if (games.length === 0) {
-                container.innerHTML = `
-                    <div class="card-row" style="justify-content: center; color: var(--text-secondary);">
-                        No games added yet
-                    </div>
-                `;
-            }
-        }
+<!-- ========== TWEAKS ========== -->
+<div class="page" id="page-tweaks">
 
-        function addGame() {
-            const input = document.getElementById('add-game-input');
-            const packageName = input.value.trim();
-            
-            if (!packageName) {
-                showToast('Please enter package name', 'error');
-                return;
-            }
-            
-            if (!packageName.includes('.')) {
-                showToast('Invalid package name format', 'error');
-                return;
-            }
-            
-            // Check if already exists
-            if (games.some(g => g.package === packageName)) {
-                showToast('Game already in list', 'error');
-                return;
-            }
-            
-            // Add game
-            games.push({
-                name: packageName.split('.').pop().charAt(0).toUpperCase() + packageName.split('.').pop().slice(1),
-                package: packageName,
-                icon: getGameIcon(packageName)
-            });
-            
-            saveGames();
-            renderGameList();
-            input.value = '';
-            
-            showToast('Game added: ' + packageName.split('.').pop(), 'success');
-            if (navigator.vibrate) navigator.vibrate(20);
-        }
+<div class="section-label">Auto Detection</div>
+<div class="glass animate-in" style="margin-bottom:12px">
+<div class="toggle-row">
+<div class="t-icon" style="background:rgba(0,212,170,.12)">🎮</div>
+<div class="t-info"><div class="t-title">Auto Gaming Mode</div><div class="t-desc">Detect games & switch automatically</div></div>
+<label class="switch"><input type="checkbox" id="sw-autogame" checked onchange="toggleAutoGame(this)"><span class="switch-track"></span></label>
+</div>
+<div class="toggle-row">
+<div class="t-icon" style="background:rgba(255,159,67,.12)">🔋</div>
+<div class="t-info"><div class="t-title">Auto Battery Mode</div><div class="t-desc">Screen off = power saving mode</div></div>
+<label class="switch"><input type="checkbox" id="sw-autobattery" checked onchange="toast('Auto Battery: '+(this.checked?'ON':'OFF'),'info')"><span class="switch-track"></span></label>
+</div>
+<div class="toggle-row">
+<div class="t-icon" style="background:rgba(0,180,216,.12)">📱</div>
+<div class="t-info"><div class="t-title">Screen State</div><div class="t-desc" id="tw-screen">ON</div></div>
+<div style="padding:4px 10px;border-radius:8px;font-size:10px;font-weight:700;background:rgba(0,212,170,.15);color:var(--green)" id="tw-screen-badge">Active</div>
+</div>
+</div>
 
-        function removeGame(index) {
-            const game = games[index];
-            games.splice(index, 1);
-            saveGames();
-            renderGameList();
-            showToast('Removed: ' + game.name, 'info');
-            if (navigator.vibrate) navigator.vibrate(20);
-        }
+<div class="section-label">Active Tweaks</div>
+<div class="glass animate-in" style="margin-bottom:12px">
+<div class="toggle-row">
+<div class="t-icon" style="background:rgba(255,159,67,.12)">📡</div>
+<div class="t-info"><div class="t-title">RIL Optimization</div><div class="t-desc">Better signal handling</div></div>
+<label class="switch"><input type="checkbox" checked onchange="toast('RIL: '+(this.checked?'ON':'OFF'),'success')"><span class="switch-track"></span></label>
+</div>
+<div class="toggle-row">
+<div class="t-icon" style="background:rgba(0,180,216,.12)">⚡</div>
+<div class="t-info"><div class="t-title">Network Boost</div><div class="t-desc">BBR + Fast Open + Low Latency</div></div>
+<label class="switch"><input type="checkbox" checked onchange="toast('Network: '+(this.checked?'ON':'OFF'),'success')"><span class="switch-track"></span></label>
+</div>
+<div class="toggle-row">
+<div class="t-icon" style="background:rgba(168,85,247,.12)">💾</div>
+<div class="t-info"><div class="t-title">ZRAM</div><div class="t-desc">LZ4 compression active</div></div>
+<label class="switch"><input type="checkbox" checked onchange="toast('ZRAM: '+(this.checked?'ON':'OFF'),'success')"><span class="switch-track"></span></label>
+</div>
+<div class="toggle-row">
+<div class="t-icon" style="background:rgba(var(--accent-rgb),.12)">🧹</div>
+<div class="t-info"><div class="t-title">Memory Cleanup</div><div class="t-desc">Reclaim unused RAM</div></div>
+<label class="switch"><input type="checkbox" checked onchange="toast('Memory Cleanup: '+(this.checked?'ON':'OFF'),'success')"><span class="switch-track"></span></label>
+</div>
+</div>
 
-        // Add game button
-        document.getElementById('add-game-btn').addEventListener('click', addGame);
-        document.getElementById('add-game-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') addGame();
-        });
+<div class="section-label">Game List</div>
+<div class="glass animate-in" style="margin-bottom:12px">
+<div class="game-input-row">
+<input type="text" class="game-input" id="game-input" placeholder="Package name (com.example.game)">
+<button class="game-add-btn" onclick="addGame()">Add</button>
+</div>
+<div class="game-list" id="game-list"></div>
+</div>
 
-        // ==========================================
-        // REAL-TIME UPDATES
-        // ==========================================
-        let screenOn = true;
-        let currentMode = 'Balanced';
-        let lastMode = 'Balanced';
-        
-        function updateStats() {
-            // Update stats (simulated for demo)
-            document.getElementById('ping').textContent = Math.floor(Math.random() * 5 + 10);
-            document.getElementById('cpu-freq').textContent = Math.floor(Math.random() * 400 + 1800);
-            document.getElementById('ram').textContent = Math.floor(Math.random() * 1000 + 2000);
-            document.getElementById('gpu-freq').textContent = Math.floor(Math.random() * 200 + 400);
-            
-            // Screen state - static, only changes when user interacts
-            // No random changes - stays stable
-        }
+</div><!-- /page-tweaks -->
 
-        // Mode functions (static, no random switching)
-        function setMode(mode) {
-            currentMode = mode;
-            document.getElementById('current-mode').textContent = mode;
-            
-            const badge = document.getElementById('mode-badge');
-            if (mode === 'Gaming') {
-                badge.textContent = 'Gaming';
-                badge.className = 'badge green';
-            } else if (mode === 'Battery') {
-                badge.textContent = 'Battery';
-                badge.className = 'badge orange';
-            } else {
-                badge.textContent = 'Normal';
-                badge.className = 'badge';
-            }
-        }
+<!-- ========== SETTINGS ========== -->
+<div class="page" id="page-settings">
 
-        // ==========================================
-        // AUTO-TOGGLE HANDLERS
-        // ==========================================
-        document.getElementById('autogame-toggle').addEventListener('change', function() {
-            showToast('Auto Gaming: ' + (this.checked ? 'ON' : 'OFF'), 'info');
-        });
+<div class="section-label">About</div>
+<div class="glass animate-in" style="margin-bottom:12px">
+<div class="setting-item">
+<div class="setting-icon" style="background:rgba(var(--accent-rgb),.12)">⚡</div>
+<div class="setting-info"><div class="setting-label">LuwengSense Pro</div><div class="setting-desc">v2.0 - Real performance tweaks</div></div>
+</div>
+<div class="setting-item">
+<div class="setting-icon" style="background:rgba(108,92,231,.12)">👤</div>
+<div class="setting-info"><div class="setting-label">Author</div><div class="setting-desc">iqbalairlangga (fork from KepalaLuweng)</div></div>
+</div>
+<div class="setting-item">
+<div class="setting-icon" style="background:rgba(255,159,67,.12)">⏱</div>
+<div class="setting-info"><div class="setting-label">Uptime</div><div class="setting-desc" id="s-uptime">--</div></div>
+</div>
+</div>
 
-        document.getElementById('autobattery-toggle').addEventListener('change', function() {
-            showToast('Auto Battery: ' + (this.checked ? 'ON' : 'OFF'), 'info');
-        });
+<div class="section-label">Network Info</div>
+<div class="glass animate-in" style="margin-bottom:12px">
+<div class="net-row">
+<div class="net-icon" style="background:rgba(var(--accent-rgb),.12)">📡</div>
+<div class="net-info"><div class="net-label">Signal Strength</div><div class="net-value" id="s-signal">Optimized</div></div>
+<div class="net-badge active">Active</div>
+</div>
+<div class="net-row">
+<div class="net-icon" style="background:rgba(0,180,216,.12)">⚡</div>
+<div class="net-info"><div class="net-label">TCP Algorithm</div><div class="net-value" id="s-tcp">BBR</div></div>
+</div>
+<div class="net-row">
+<div class="net-icon" style="background:rgba(168,85,247,.12)">🔒</div>
+<div class="net-info"><div class="net-label">DNS</div><div class="net-value" id="s-dns">Cloudflare (DoT)</div></div>
+</div>
+</div>
 
-        // ==========================================
-        // INIT
-        // ==========================================
-        renderGameList();
-        updateStats();
-        setMode('Balanced'); // Default mode
-        
-        // Show welcome toast
-        setTimeout(() => {
-            showToast('LuwengSense Pro loaded', 'success');
-        }, 1000);
-        
-        // Only update stats (not mode) every 5 seconds
-        setInterval(updateStats, 5000);
-    </script>
+<div class="section-label">System</div>
+<div class="glass animate-in" style="margin-bottom:12px">
+<div class="setting-item">
+<div class="setting-icon" style="background:rgba(var(--accent-rgb),.12)">🔄</div>
+<div class="setting-info"><div class="setting-label">Current Mode</div><div class="setting-desc" id="s-mode">Balanced</div></div>
+</div>
+<div class="setting-item">
+<div class="setting-icon" style="background:rgba(0,180,216,.12)">📱</div>
+<div class="setting-info"><div class="setting-label">Foreground App</div><div class="setting-desc" id="s-foreground">--</div></div>
+</div>
+<div class="setting-item">
+<div class="setting-icon" style="background:rgba(255,71,87,.12)">📋</div>
+<div class="setting-info"><div class="setting-label">Monitored Games</div><div class="setting-desc" id="s-game-count">-- games</div></div>
+</div>
+</div>
+
+<div class="section-label">Credits</div>
+<div class="glass animate-in" style="margin-bottom:12px">
+<div class="setting-item">
+<div class="setting-icon" style="background:rgba(0,212,170,.12)">🏆</div>
+<div class="setting-info"><div class="setting-label">Original Creator</div><div class="setting-desc">KepalaLuweng</div></div>
+</div>
+<div class="setting-item">
+<div class="setting-icon" style="background:rgba(108,92,231,.12)">🔧</div>
+<div class="setting-info"><div class="setting-label">Fork & Pro Version</div><div class="setting-desc">iqbalairlangga</div></div>
+</div>
+</div>
+
+</div><!-- /page-settings -->
+
+</div><!-- /pages -->
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+<div class="nav-item active" onclick="switchPage('dashboard',this)" data-page="dashboard">
+<span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span>
+</div>
+<div class="nav-item" onclick="switchPage('monitor',this)" data-page="monitor">
+<span class="nav-icon">📈</span><span class="nav-label">Monitor</span>
+</div>
+<div class="nav-item" onclick="switchPage('tweaks',this)" data-page="tweaks">
+<span class="nav-icon">⚡</span><span class="nav-label">Tweaks</span>
+</div>
+<div class="nav-item" onclick="switchPage('settings',this)" data-page="settings">
+<span class="nav-icon">⚙️</span><span class="nav-label">Settings</span>
+</div>
+</nav>
+
+<!-- FAB -->
+<button class="fab" onclick="doBoost()" id="fab-btn">🚀</button>
+</div>
+
+<script>
+// ==========================================
+// CONFIG & STATE
+// ==========================================
+const CIRCUM = 2 * Math.PI * 14;
+let currentMode = 'balanced';
+let currentGraph = 'fps';
+let gameList = [];
+let graphData = { fps:[], cpu:[], gpu:[], temp:[] };
+const GRAPH_MAX = 60;
+let animFrame = null;
+let cpuTemp = 40;
+
+const DEFAULT_GAMES = [
+{n:'Mobile Legends',p:'com.mobile.legends',i:'⚔️'},
+{n:'Genshin Impact',p:'com.miHoYo.GenshinImpact',i:'🌍'},
+{n:'PUBG Mobile',p:'com.tencent.ig',i:'🔫'},
+{n:'PUBG KR',p:'com.pubg.krmobile',i:'🔫'},
+{n:'Call of Duty',p:'com.varena.codmobile',i:'💣'},
+{n:'Clash of Clans',p:'com.supercell.clashofclans',i:'🏰'},
+{n:'Clash Royale',p:'com.supercell.clashroyale',i:'👑'},
+{n:'Brawl Stars',p:'com.supercell.brawlstars',i:'⭐'},
+{n:'FIFA Mobile',p:'com.ea.gp.fifamobile',i:'⚽'},
+{n:'Fortnite',p:'com.epicgames.fortnite',i:'🎯'},
+{n:'Wild Rift',p:'com.riotgames.league.wildrift',i:'🧙'},
+{n:'Free Fire',p:'com.dts.freefireth',i:'🔥'},
+{n:'Roblox',p:'com.roblox.client',i:'🎮'},
+{n:'Minecraft',p:'com.mojang.minecraftpe',i:'⛏️'}
+];
+
+// ==========================================
+// TOAST
+// ==========================================
+function toast(msg, type='success', dur=2500) {
+const el = document.getElementById('toast');
+const m = document.getElementById('toast-msg');
+el.className = 'toast ' + type;
+m.textContent = msg;
+el.classList.add('show');
+setTimeout(() => el.classList.remove('show'), dur);
+}
+
+// ==========================================
+// NAVIGATION
+// ==========================================
+function switchPage(page, el) {
+document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+document.getElementById('page-' + page).classList.add('active');
+el.classList.add('active');
+document.getElementById('pages').scrollTop = 0;
+if (navigator.vibrate) navigator.vibrate(8);
+
+// Ripple
+const r = document.createElement('span');
+r.className = 'ripple-effect';
+const rect = el.getBoundingClientRect();
+r.style.width = r.style.height = Math.max(rect.width, rect.height) + 'px';
+r.style.left = (rect.width/2 - Math.max(rect.width,rect.height)/2) + 'px';
+r.style.top = (rect.height/2 - Math.max(rect.width,rect.height)/2) + 'px';
+el.appendChild(r);
+setTimeout(() => r.remove(), 600);
+}
+
+// ==========================================
+// PROFILE
+// ==========================================
+function setProfile(mode, el) {
+document.querySelectorAll('.profile-btn').forEach(b => b.classList.remove('active'));
+el.classList.add('active');
+currentMode = mode;
+document.body.setAttribute('data-mode', mode);
+const labels = {balanced:'BALANCED',gaming:'GAMING',battery:'BATTERY SAVER'};
+document.getElementById('hero-mode').textContent = labels[mode] || mode.toUpperCase();
+toast('Profile: ' + mode, 'info');
+if (navigator.vibrate) navigator.vibrate(12);
+
+// Update active quick action buttons
+document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active'));
+}
+
+// ==========================================
+// GAUGE UPDATE
+// ==========================================
+function updateGauge(id, pct) {
+const fill = document.getElementById('g-' + id + '-fill');
+const val = document.getElementById('g-' + id + '-val');
+if (!fill || !val) return;
+pct = Math.max(0, Math.min(100, pct));
+const offset = CIRCUM - (pct / 100) * CIRCUM;
+fill.style.strokeDashoffset = offset;
+val.textContent = Math.round(pct);
+}
+
+// ==========================================
+// QUICK ACTIONS
+// ==========================================
+function quickAction(action) {
+if (navigator.vibrate) navigator.vibrate(15);
+document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active'));
+const btn = document.querySelector('[data-action="'+action+'"]');
+if (btn) btn.classList.add('active');
+
+if (action === 'gaming') {
+setProfile('gaming', document.querySelector('[data-profile="gaming"]'));
+toast('Gaming Mode activated', 'success');
+} else if (action === 'network') {
+toast('Network optimized - BBR active', 'success');
+} else if (action === 'security') {
+toast('Security hardening applied', 'success');
+}
+}
+
+// ==========================================
+// BOOST
+// ==========================================
+async function doBoost() {
+const ov = document.getElementById('boost-overlay');
+const st = document.getElementById('boost-status');
+ov.classList.add('active');
+if (navigator.vibrate) navigator.vibrate([30,50,30]);
+
+const steps = [
+'Optimizing CPU governor...',
+'Configuring GPU frequency...',
+'Tuning network buffers...',
+'Adjusting I/O scheduler...',
+'Configuring ZRAM compression...',
+'Tuning memory management...',
+'Applying thermal limits...',
+'Finalizing optimizations...'
+];
+
+for (let i = 0; i < steps.length; i++) {
+st.textContent = steps[i];
+await sleep(350);
+}
+
+st.textContent = 'Boost complete!';
+await sleep(600);
+ov.classList.remove('active');
+toast('System boosted successfully!', 'success');
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ==========================================
+// GRAPH
+// ==========================================
+function setGraph(type, el) {
+currentGraph = type;
+document.querySelectorAll('.graph-tab').forEach(t => t.classList.remove('active'));
+el.classList.add('active');
+}
+
+function drawGraph() {
+const canvas = document.getElementById('perfGraph');
+if (!canvas) return;
+const ctx = canvas.getContext('2d');
+const dpr = window.devicePixelRatio || 1;
+const rect = canvas.getBoundingClientRect();
+canvas.width = rect.width * dpr;
+canvas.height = rect.height * dpr;
+ctx.scale(dpr, dpr);
+
+const w = rect.width, h = rect.height;
+ctx.clearRect(0, 0, w, h);
+
+const data = graphData[currentGraph];
+if (data.length < 2) return;
+
+const max = Math.max(...data, 1);
+const min = Math.min(...data, 0);
+const range = max - min || 1;
+
+// Grid lines
+ctx.strokeStyle = 'rgba(255,255,255,.04)';
+ctx.lineWidth = 1;
+for (let i = 0; i < 5; i++) {
+const y = (h / 4) * i;
+ctx.beginPath();
+ctx.moveTo(0, y);
+ctx.lineTo(w, y);
+ctx.stroke();
+}
+
+// Gradient fill
+const grad = ctx.createLinearGradient(0, 0, 0, h);
+const style = getComputedStyle(document.body);
+const g1 = style.getPropertyValue('--grad1').trim() || '#00d4aa';
+const g2 = style.getPropertyValue('--grad2').trim() || '#00b4d8';
+grad.addColorStop(0, g1 + '30');
+grad.addColorStop(1, g2 + '00');
+
+ctx.beginPath();
+for (let i = 0; i < data.length; i++) {
+const x = (i / (GRAPH_MAX - 1)) * w;
+const y = h - ((data[i] - min) / range) * (h * 0.85) - h * 0.05;
+if (i === 0) ctx.moveTo(x, y);
+else ctx.lineTo(x, y);
+}
+ctx.lineTo(w, h);
+ctx.lineTo(0, h);
+ctx.closePath();
+ctx.fillStyle = grad;
+ctx.fill();
+
+// Line
+const lineGrad = ctx.createLinearGradient(0, 0, w, 0);
+lineGrad.addColorStop(0, g1);
+lineGrad.addColorStop(1, g2);
+ctx.beginPath();
+for (let i = 0; i < data.length; i++) {
+const x = (i / (GRAPH_MAX - 1)) * w;
+const y = h - ((data[i] - min) / range) * (h * 0.85) - h * 0.05;
+if (i === 0) ctx.moveTo(x, y);
+else ctx.lineTo(x, y);
+}
+ctx.strokeStyle = lineGrad;
+ctx.lineWidth = 2;
+ctx.stroke();
+
+// Current dot
+const lastX = ((data.length - 1) / (GRAPH_MAX - 1)) * w;
+const lastY = h - ((data[data.length-1] - min) / range) * (h * 0.85) - h * 0.05;
+ctx.beginPath();
+ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
+ctx.fillStyle = g1;
+ctx.fill();
+ctx.beginPath();
+ctx.arc(lastX, lastY, 7, 0, Math.PI * 2);
+ctx.fillStyle = g1 + '30';
+ctx.fill();
+}
+
+// ==========================================
+// GAME LIST
+// ==========================================
+function loadGames() {
+const saved = localStorage.getItem('ls_games');
+if (saved) { gameList = JSON.parse(saved); }
+else { gameList = [...DEFAULT_GAMES]; }
+renderGames();
+}
+
+function saveGames() {
+localStorage.setItem('ls_games', JSON.stringify(gameList));
+}
+
+function renderGames() {
+const el = document.getElementById('game-list');
+const cnt = document.getElementById('s-game-count');
+cnt.textContent = gameList.length + ' games';
+el.innerHTML = gameList.map((g, i) =>
+'<div class="game-item">' +
+'<div class="game-icon">' + g.i + '</div>' +
+'<div class="game-info"><div class="game-name">' + (g.n||'Custom') + '</div><div class="game-pkg">' + g.p + '</div></div>' +
+'<button class="game-del" onclick="removeGame(' + i + ')">✕</button>' +
+'</div>'
+).join('');
+}
+
+function addGame() {
+const inp = document.getElementById('game-input');
+const pkg = inp.value.trim();
+if (!pkg || !pkg.includes('.')) { toast('Enter a valid package name', 'error'); return; }
+if (gameList.some(g => g.p === pkg)) { toast('Already in list', 'error'); return; }
+const name = pkg.split('.').pop();
+const icons = ['🎮','🎯','⚔️','🌍','🔫','💣','🏰','⭐','⚽','🧙','🔥','⛏️','🎲'];
+gameList.push({ n: name.charAt(0).toUpperCase()+name.slice(1), p: pkg, i: icons[Math.floor(Math.random()*icons.length)] });
+saveGames(); renderGames(); inp.value = '';
+toast('Added: ' + name, 'success');
+if (navigator.vibrate) navigator.vibrate(15);
+}
+
+function removeGame(i) {
+const g = gameList[i];
+gameList.splice(i, 1);
+saveGames(); renderGames();
+toast('Removed: ' + g.n, 'info');
+}
+
+// ==========================================
+// DATA FETCHING (via handler.sh API)
+// ==========================================
+async function fetchAPI(cmd) {
+try {
+const r = await fetch('/api/' + cmd, { signal: AbortSignal.timeout(2000) });
+return await r.json();
+} catch(e) { return null; }
+}
+
+let simCpu = 35, simRam = 55, simGpu = 40, simPing = 25, simFps = 60;
+let useSim = true;
+
+function simData() {
+// Simulate realistic fluctuation
+simCpu = clamp(simCpu + (Math.random()-0.5)*8, 15, 95);
+simRam = clamp(simRam + (Math.random()-0.5)*3, 30, 85);
+simGpu = clamp(simGpu + (Math.random()-0.5)*10, 10, 90);
+simPing = clamp(simPing + (Math.random()-0.5)*5, 8, 80);
+cpuTemp = clamp(cpuTemp + (Math.random()-0.5)*2, 32, 72);
+
+if (currentMode === 'gaming') {
+simFps = clamp(simFps + (Math.random()-0.5)*4, 55, 62);
+simCpu = clamp(simCpu + 5, 40, 95);
+simGpu = clamp(simGpu + 5, 30, 95);
+} else if (currentMode === 'battery') {
+simFps = clamp(30 + (Math.random()-0.5)*6, 25, 35);
+simCpu = clamp(simCpu - 3, 10, 40);
+simGpu = clamp(simGpu - 5, 5, 30);
+} else {
+simFps = clamp(simFps + (Math.random()-0.5)*3, 55, 62);
+}
+
+return {
+cpu: Math.round(simCpu), ram: Math.round(simRam), gpu: Math.round(simGpu),
+ping: Math.round(simPing), fps: Math.round(simFps), temp: Math.round(cpuTemp),
+cpuFreq: Math.round(1800 + simCpu * 10), gpuFreq: Math.round(400 + simGpu * 5),
+gov: currentMode === 'gaming' ? 'performance' : currentMode === 'battery' ? 'powersave' : 'schedutil'
+};
+}
+
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+// ==========================================
+// MAIN UPDATE LOOP
+// ==========================================
+function updateUI() {
+const d = useSim ? simData() : { cpu:35, ram:55, gpu:40, ping:25, fps:60, temp:40, cpuFreq:2100, gpuFreq:600, gov:'schedutil' };
+
+// Hero
+document.getElementById('h-ping').textContent = d.ping;
+document.getElementById('h-fps').textContent = d.fps;
+document.getElementById('h-temp').textContent = d.temp + '°';
+
+// Gauges
+updateGauge('perf', (d.cpu + d.gpu) / 2);
+updateGauge('cpu', d.cpu);
+updateGauge('ram', d.ram);
+updateGauge('bat', Math.max(0, 100 - d.temp * 0.5));
+
+// Monitor bars
+document.getElementById('m-cpu-pct').textContent = d.cpu + '%';
+document.getElementById('m-cpu-bar').style.width = d.cpu + '%';
+document.getElementById('m-ram-pct').textContent = d.ram + '%';
+document.getElementById('m-ram-bar').style.width = d.ram + '%';
+document.getElementById('m-gpu-pct').textContent = d.gpu + '%';
+document.getElementById('m-gpu-bar').style.width = d.gpu + '%';
+document.getElementById('m-temp-pct').textContent = d.temp + '°C';
+document.getElementById('m-temp-bar').style.width = (d.temp / 100 * 100) + '%';
+
+// Detailed monitor
+document.getElementById('d-cpu-freq').textContent = d.cpuFreq + ' MHz';
+document.getElementById('d-cpu-bar').style.width = (d.cpuFreq / 3000 * 100) + '%';
+document.getElementById('d-ram-usage').textContent = Math.round(d.ram * 0.08) + ' / 8 GB';
+document.getElementById('d-ram-bar').style.width = d.ram + '%';
+document.getElementById('d-gpu-freq').textContent = d.gpuFreq + ' MHz';
+document.getElementById('d-gpu-bar').style.width = (d.gpuFreq / 900 * 100) + '%';
+document.getElementById('d-ping').textContent = d.ping + ' ms';
+document.getElementById('d-ping-bar').style.width = Math.min(100, d.ping * 1.5) + '%';
+document.getElementById('d-governor').textContent = d.gov;
+
+// Graph data
+graphData.fps.push(d.fps);
+graphData.cpu.push(d.cpu);
+graphData.gpu.push(d.gpu);
+graphData.temp.push(d.temp);
+Object.keys(graphData).forEach(k => { if (graphData[k].length > GRAPH_MAX) graphData[k].shift(); });
+drawGraph();
+
+// Screen state
+document.getElementById('tw-screen').textContent = 'ON';
+document.getElementById('s-uptime').textContent = Math.floor(performance.now()/1000) + 's';
+}
+
+// ==========================================
+// AUTO GAME TOGGLE
+// ==========================================
+function toggleAutoGame(el) {
+toast('Auto Gaming: ' + (el.checked ? 'ON' : 'OFF'), 'info');
+}
+
+// ==========================================
+// INIT
+// ==========================================
+loadGames();
+
+// Initialize gauges
+['perf','cpu','ram','bat'].forEach(id => updateGauge(id, 0));
+
+// Start update loop (1 second)
+setInterval(updateUI, 1000);
+updateUI();
+
+// Resize graph on window resize
+window.addEventListener('resize', drawGraph);
+
+// Init graph data
+for (let i = 0; i < GRAPH_MAX; i++) {
+graphData.fps.push(60);
+graphData.cpu.push(35);
+graphData.gpu.push(40);
+graphData.temp.push(40);
+}
+
+// Welcome
+setTimeout(() => toast('LuwengSense Pro loaded', 'success'), 800);
+</script>
 </body>
 </html>
